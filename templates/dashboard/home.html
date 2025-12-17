@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | AI Resume Builder{% endblock %}
+
+{% block content %}
+<button
+    onclick="window.history.back()"
+    class="absolute top-6 left-6 z-30
+           flex items-center gap-2
+           px-5 py-3 rounded-full
+           bg-emerald-500/90 backdrop-blur-md
+           text-white text-base font-semibold
+           shadow-lg
+           hover:bg-emerald-600
+           hover:scale-105
+           transition-all duration-200"
+>
+    ← Back
+</button>
+
+
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 text-white">
+
+  <!-- HEADER -->
+  <div class="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <h1 class="text-2xl sm:text-3xl font-bold">
+      👋 Welcome, {{ request.user.username }}
+    </h1>
+
+    <a href="/accounts/logout/"
+       class="px-5 py-2 rounded-full bg-red-500 hover:bg-red-600 transition">
+      Logout
+    </a>
+  </div>
+
+  <!-- HERO / AI SECTION -->
+  <div class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+
+    <!-- TEXT -->
+    <div>
+      <h2 class="text-3xl sm:text-4xl font-bold mb-4">
+        Build Your Resume with AI ✨
+      </h2>
+      <p class="text-white/80 leading-relaxed mb-6">
+        Our AI Resume Builder helps you create professional resumes in minutes.
+        Smart suggestions, modern templates, and instant previews — all powered
+        by artificial intelligence.
+      </p>
+
+      <a href="/resume/create/"
+         class="inline-block bg-indigo-500 hover:bg-indigo-600 px-6 py-3 rounded-full text-lg font-semibold transition">
+        🚀 Create Resume with AI
+      </a>
+    </div>
+
+    <!-- IMAGE SLIDER -->
+    <div class="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden shadow-xl">
+      <img id="aiSlider"
+           src="https://images.unsplash.com/photo-1586281380349-632531db7ed4"
+           class="w-full h-full object-cover transition-opacity duration-700" />
+      <div class="absolute inset-0 bg-black/30"></div>
+    </div>
+
+  </div>
+
+  <!-- CARDS SECTION -->
+  <div class="max-w-7xl mx-auto px-4 mt-12 pb-16 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <!-- Create Resume -->
+    <div class="bg-white/10 backdrop-blur-xl p-6 rounded-2xl hover:bg-white/20 transition">
+      <h3 class="text-xl font-semibold mb-2">📝 Create Resume</h3>
+      <p class="text-white/70 mb-4">
+        Generate AI-powered resumes with smart content suggestions.
+      </p>
+      <a href="/resume/create/"
+   class="inline-block bg-indigo-500 px-4 py-2 rounded-full">
+   Create
+</a>
+
+      </a>
+    </div>
+
+    <!-- My Resumes -->
+    <div class="bg-white/10 backdrop-blur-xl p-6 rounded-2xl hover:bg-white/20 transition">
+      <h3 class="text-xl font-semibold mb-2">📂 My Resumes</h3>
+      <p class="text-white/70 mb-4">
+        View, edit, download or delete your resumes anytime.
+      </p>
+      <a href="/dashboard/resumes/"
+         class="inline-block bg-green-500 px-4 py-2 rounded-full">
+        View
+      </a>
+    </div>
+
+    <!-- Profile -->
+    <div class="bg-white/10 backdrop-blur-xl p-6 rounded-2xl hover:bg-white/20 transition">
+      <h3 class="text-xl font-semibold mb-2">👤 Profile</h3>
+      <p class="text-white/70 mb-4">
+        Manage your account settings and preferences.
+      </p>
+      <span class="inline-block bg-gray-500 px-4 py-2 rounded-full text-sm">
+        Coming Soon
+      </span>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- IMAGE SLIDER SCRIPT -->
+<script>
+  const images = [
+    "https://images.unsplash.com/photo-1586281380349-632531db7ed4",
+    "https://images.unsplash.com/photo-1507209696998-3c532be9b2b5",
+    "https://images.unsplash.com/photo-1517433456452-f9633a875f6f"
+  ];
+
+  let index = 0;
+  const slider = document.getElementById("aiSlider");
+
+  setInterval(() => {
+    index = (index + 1) % images.length;
+    slider.style.opacity = 0;
+    setTimeout(() => {
+      slider.src = images[index];
+      slider.style.opacity = 1;
+    }, 400);
+  }, 4000);
+</script>
+
+{% endblock %}
