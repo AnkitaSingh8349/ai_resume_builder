@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}My Resumes | Resume Builder{% endblock %}
+
+{% block body_class %}
+bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto px-6 py-10">
+
+  <!-- HEADER -->
+  <div class="flex justify-between items-center mb-10">
+    <div>
+      <h1 class="text-4xl font-extrabold mb-2">My Resumes</h1>
+      <p class="text-blue-200 max-w-2xl">
+        Manage all your professional resumes in one place.
+        Preview, edit, and download ATS-friendly PDFs.
+      </p>
+    </div>
+
+    <a href="{% url 'resumes:create_resume' %}"
+       class="bg-blue-500 hover:bg-blue-600 px-6 py-3 rounded-xl font-semibold shadow-lg">
+      + Create Resume
+    </a>
+  </div>
+
+  <!-- RESUME CARDS -->
+  {% if resumes %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+
+    {% for resume in resumes %}
+    <div class="bg-white/10 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/10">
+
+      <h3 class="text-xl font-bold mb-1">
+        {{ resume.full_name }}
+      </h3>
+
+      <p class="text-sm text-blue-200 break-all">
+        {{ resume.email }}
+      </p>
+
+      <div class="flex gap-3 mt-6">
+
+        <!-- PREVIEW (default template only) -->
+        <a href="{% url 'resumes:resume_preview' resume.id %}"
+           class="flex-1 text-center bg-blue-500 hover:bg-blue-600 px-4 py-2 rounded-lg text-sm font-semibold">
+          Preview
+        </a>
+
+        <!-- EDIT -->
+        <a href="{% url 'resumes:edit_resume' resume.id %}"
+           class="flex-1 text-center bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold">
+          Edit
+        </a>
+
+        <!-- PDF -->
+        <a href="{% url 'resumes:download_resume' resume.id %}"
+           class="flex-1 text-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-semibold">
+          PDF
+        </a>
+
+      </div>
+    </div>
+    {% endfor %}
+
+  </div>
+
+  {% else %}
+  <div class="bg-white/10 rounded-2xl p-12 text-center max-w-xl mx-auto">
+    <h3 class="text-2xl font-bold mb-4">No resumes yet</h3>
+    <p class="text-blue-200 mb-6">
+      Create your first professional resume with AI assistance.
+    </p>
+    <a href="{% url 'resumes:create_resume' %}"
+       class="bg-blue-500 hover:bg-blue-600 px-8 py-3 rounded-xl font-semibold">
+      Create Resume
+    </a>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

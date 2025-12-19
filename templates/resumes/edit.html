@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Resume</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+</head>
+<body class="bg-blue-50">
+
+    
+
+<div class="max-w-4xl mx-auto mt-10 bg-white p-8 rounded-lg shadow">
+
+    <h1 class="text-2xl font-bold mb-6">Edit Resume</h1>
+
+    <form method="post" id="resume-form">
+
+        {% csrf_token %}
+
+        <!-- Full Name -->
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Full Name</label>
+            {{ form.full_name }}
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Email</label>
+            {{ form.email }}
+        </div>
+
+        <!-- Phone -->
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Phone</label>
+            {{ form.phone }}
+        </div>
+
+        <!-- Template Selection -->
+<div class="mb-4">
+    <label class="block font-semibold mb-1">Resume Template</label>
+    {{ form.template }}
+</div>
+
+<!-- Theme Color -->
+<div class="mb-4">
+    <label class="block font-semibold mb-1">Theme Color</label>
+    {{ form.color }}
+</div>
+
+
+        <!-- Summary -->
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Professional Summary</label>
+            {{ form.summary }}
+            <button type="button"
+                    onclick="improveText('summary')"
+                    class="mt-2 text-xs bg-blue-600 text-white px-3 py-1 rounded">
+                ✨ Improve with AI
+            </button>
+        </div>
+
+        <!-- Skills -->
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Skills</label>
+            {{ form.skills }}
+            <button type="button"
+                    onclick="improveText('skills')"
+                    class="mt-2 text-xs bg-blue-600 text-white px-3 py-1 rounded">
+                ✨ Enhance Skills
+            </button>
+        </div>
+
+        <!-- Experience -->
+        <div class="mb-4">
+            <label class="block font-semibold mb-1">Experience</label>
+            {{ form.experience }}
+            <button type="button"
+                    onclick="improveText('experience')"
+                    class="mt-2 text-xs bg-blue-600 text-white px-3 py-1 rounded">
+                ✨ Rewrite Experience
+            </button>
+        </div>
+
+        <!-- Education -->
+        <div class="mb-6">
+            <label class="block font-semibold mb-1">Education</label>
+            {{ form.education }}
+            <button type="button"
+                    onclick="improveText('education')"
+                    class="mt-2 text-xs bg-blue-600 text-white px-3 py-1 rounded">
+                ✨ Improve Education
+            </button>
+        </div>
+
+        <!-- Save -->
+     <div class="flex justify-end gap-4 mt-6">
+
+    <button type="submit"
+            class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+        Save & Preview
+    </button>
+<a href="{% url 'resumes:resume_preview' resume.id %}"
+   class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 inline-flex items-center">
+    Preview Resume
+</a>
+
+
+
+
+</div>
+
+    </form>
+</div>
+
+<!-- ✅ INLINE JS (NO STATIC FILE NEEDED) -->
+<script>
+function improveText(fieldName) {
+    const textarea = document.getElementById("id_" + fieldName);
+
+    if (!textarea) {
+        alert("Textarea not found: " + fieldName);
+        return;
+    }
+
+    const csrfToken = document.querySelector(
+        'input[name="csrfmiddlewaretoken"]'
+    ).value;
+
+    // Disable textarea while AI runs
+    textarea.disabled = true;
+
+    fetch("/ai/improve/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",   // ✅ JSON
+            "X-CSRFToken": csrfToken              // ✅ CSRF
+        },
+        body: JSON.stringify({
+            text: textarea.value                  // ✅ backend expects this
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.result) {
+            textarea.value = data.result;         // ✅ success
+        } else if (data.error) {
+            alert("AI Error: " + data.error);
+        } else {
+            alert("AI returned empty result");
+        }
+    })
+    .catch(error => {
+        console.error(error);
+        alert("AI request failed");
+    })
+    .finally(() => {
+        textarea.disabled = false;
+    });
+}
+</script>
+
+
+</body>
+</html>
+{% endblock %}

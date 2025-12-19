@@ -8,18 +8,15 @@
   <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden
               grid grid-cols-1 lg:grid-cols-2">
 
-    <!-- LEFT IMAGE / INFO SECTION -->
+    <!-- LEFT IMAGE / INFO -->
     <div class="hidden lg:flex flex-col justify-between p-10 text-white
                 bg-cover bg-center"
          style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d');">
 
       <div class="bg-black/40 p-6 rounded-xl">
-        <h2 class="text-3xl font-bold mb-3">
-          AI Resume Builder
-        </h2>
-        <p class="text-sm leading-relaxed">
+        <h2 class="text-3xl font-bold mb-3">AI Resume Builder</h2>
+        <p class="text-sm">
           Create a professional, ATS-friendly resume with smart AI suggestions.
-          Improve your summary, skills, and experience instantly.
         </p>
       </div>
 
@@ -30,43 +27,32 @@
       </div>
     </div>
 
-    <!-- RIGHT FORM SECTION -->
+    <!-- RIGHT FORM -->
     <div class="p-6 sm:p-10 max-h-[90vh] overflow-y-auto">
 
-      <!-- HEADER -->
-      <div class="mb-6">
-        <h3 class="text-2xl sm:text-3xl font-bold text-gray-800">
-          Create Your Resume
-        </h3>
-        <p class="text-gray-500 text-sm mt-1">
-          Fill details or let AI help you
-        </p>
-      </div>
+      <h3 class="text-2xl font-bold mb-6 text-gray-800">
+        Create Your Resume
+      </h3>
 
       <form method="POST" class="space-y-7">
         {% csrf_token %}
 
         <!-- BASIC INFO -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <input name="full_name" required
-            placeholder="Full Name"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          <input name="full_name" required placeholder="Full Name"
+            class="w-full p-3 border rounded-lg">
 
-          <input name="email" type="email" required
-            placeholder="Email"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          <input name="email" type="email" required placeholder="Email"
+            class="w-full p-3 border rounded-lg">
 
-          <input name="phone"
-            placeholder="Phone"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500">
+          <input name="phone" placeholder="Phone"
+            class="w-full p-3 border rounded-lg">
         </div>
 
         <!-- SUMMARY -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="text-sm font-semibold text-gray-700">
-              Professional Summary
-            </label>
+            <label class="font-semibold text-gray-700">Professional Summary</label>
             <button type="button"
               onclick="aiImprove('summary')"
               class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
@@ -75,18 +61,17 @@
           </div>
 
           <textarea id="summary" name="summary" rows="4"
-            placeholder="Write or leave empty for AI"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+            class="w-full p-3 border rounded-lg"
+            placeholder="Write or leave empty for AI"></textarea>
 
-          <div id="summary_ai" class="hidden mt-3 bg-gray-50 p-3 rounded-lg"></div>
+          <textarea id="summary_ai"
+            class="hidden w-full mt-3 p-3 border rounded-lg bg-gray-50"></textarea>
         </div>
 
         <!-- SKILLS -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="text-sm font-semibold text-gray-700">
-              Skills
-            </label>
+            <label class="font-semibold text-gray-700">Skills</label>
             <button type="button"
               onclick="aiImprove('skills')"
               class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
@@ -95,18 +80,17 @@
           </div>
 
           <textarea id="skills" name="skills" rows="3"
-            placeholder="Python, Django, SQL..."
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+            class="w-full p-3 border rounded-lg"
+            placeholder="Python, Django, SQL..."></textarea>
 
-          <div id="skills_ai" class="hidden mt-3 bg-gray-50 p-3 rounded-lg"></div>
+          <textarea id="skills_ai"
+            class="hidden w-full mt-3 p-3 border rounded-lg bg-gray-50"></textarea>
         </div>
 
         <!-- EXPERIENCE -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="text-sm font-semibold text-gray-700">
-              Experience
-            </label>
+            <label class="font-semibold text-gray-700">Experience</label>
             <button type="button"
               onclick="aiImprove('experience')"
               class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
@@ -115,93 +99,91 @@
           </div>
 
           <textarea id="experience" name="experience" rows="4"
-            placeholder="Describe your experience or let AI write"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+            class="w-full p-3 border rounded-lg"
+            placeholder="Describe your experience"></textarea>
 
-          <div id="experience_ai" class="hidden mt-3 bg-gray-50 p-3 rounded-lg"></div>
+          <textarea id="experience_ai"
+            class="hidden w-full mt-3 p-3 border rounded-lg bg-gray-50"></textarea>
         </div>
 
         <!-- EDUCATION -->
         <div>
-          <label class="text-sm font-semibold text-gray-700">
-            Education
-          </label>
+          <label class="font-semibold text-gray-700">Education</label>
           <textarea name="education" rows="3"
-            placeholder="Degree, College, Year"
-            class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+            class="w-full p-3 border rounded-lg"
+            placeholder="Degree, College, Year"></textarea>
         </div>
 
-        <!-- BUTTONS -->
-        <div class="flex flex-col sm:flex-row gap-4 pt-4">
+        <!-- ACTIONS -->
+        <div class="flex gap-4 pt-4">
           <button type="submit"
-            class="px-8 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+            class="px-8 py-3 bg-indigo-600 text-white rounded-lg">
             Save Resume
           </button>
 
           <a href="/dashboard/"
-            class="px-8 py-3 bg-gray-200 rounded-lg hover:bg-gray-300 text-center">
+            class="px-8 py-3 bg-gray-200 rounded-lg text-center">
             Cancel
           </a>
         </div>
-
       </form>
     </div>
   </div>
 </div>
 
-<!-- ✅ CSRF TOKEN HELPER -->
-<script>
-function getCSRFToken() {
-  return document.querySelector('[name=csrfmiddlewaretoken]').value;
-}
-</script>
-
-<!-- ✅ AI SCRIPT (FIXED, WORKING) -->
+<!-- ===================== -->
+<!-- ✅ AI JAVASCRIPT -->
+<!-- ===================== -->
 <script>
 function aiImprove(field) {
-  const textarea = document.getElementById(field);
-  let text = textarea.value.trim();
-
-  if (!text) {
-    text = "Generate a professional resume section";
-  }
-
-  fetch("/ai/improve/", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "X-CSRFToken": getCSRFToken()
-  },
-  body: JSON.stringify({ text })
-})
-
-  .then(res => res.json())
-  .then(data => {
-    console.log("AI RESPONSE:", data);
-
-    const box = document.getElementById(field + "_ai");
-    box.innerHTML = `
-      <p class="font-semibold mb-2">AI Suggested</p>
-      <textarea class="w-full p-3 border rounded-lg">${data.improved_text}</textarea>
-      <button type="button"
-        class="mt-2 px-3 py-1 bg-indigo-600 text-white rounded-lg text-sm"
-        onclick="acceptAI('${field}', this)">
-        Accept
-      </button>
-    `;
-    box.classList.remove("hidden");
-  })
-  .catch(err => {
-    console.error(err);
-    alert("AI service error");
-  });
+    improveText(field, field + "_ai");
 }
 
-function acceptAI(field, btn) {
-  const aiText = btn.previousElementSibling.value;
-  document.getElementById(field).value = aiText;
+async function improveText(sourceId, targetId) {
+    const sourceEl = document.getElementById(sourceId);
+    const targetEl = document.getElementById(targetId);
+
+    const text = sourceEl.value.trim();
+    if (!text) {
+        alert("Please enter some text first.");
+        return;
+    }
+
+    targetEl.classList.remove("hidden");
+    targetEl.value = "⏳ Improving with AI...";
+
+    try {
+        const response = await fetch("/ai/improve/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({ text })
+        });
+
+        const data = await response.json();
+        console.log("AI RESPONSE:", data);
+
+        if (!response.ok) {
+            targetEl.value = "";
+            alert(data.error || "AI error");
+            return;
+        }
+
+        if (data.result) {
+            targetEl.value = data.result;
+        } else {
+            targetEl.value = "";
+            alert("AI returned empty result");
+        }
+
+    } catch (err) {
+        targetEl.value = "";
+        alert("Network error");
+        console.error(err);
+    }
 }
 </script>
-
 
 {% endblock %}

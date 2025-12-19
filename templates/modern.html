@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resume</title>
+
+  <!-- Tailwind compiled CSS -->
+  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+
+  <!-- Inline CSS (PDF safe) -->
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      color: #1f2937;
+    }
+
+    .resume-box {
+      border-left: 6px solid #4f46e5;
+      padding-left: 24px;
+    }
+
+    .section-title {
+      color: #4f46e5;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .divider {
+      border-top: 1px solid #e5e7eb;
+      margin: 24px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="max-w-4xl mx-auto mt-10 resume-box">
+
+    <!-- Header -->
+    <h1 class="text-3xl font-bold text-gray-900">
+      {{ resume.full_name }}
+    </h1>
+
+    <p class="text-gray-600 mt-1">
+      {{ resume.email }} • {{ resume.phone }}
+    </p>
+
+    <!-- Work / Portfolio Link -->
+    {% if resume.work_link %}
+    <p class="text-gray-600 mt-2 mb-4">
+      <span class="font-semibold">Work / Portfolio:</span>
+      <a href="{{ resume.work_link }}"
+         target="_blank"
+         style="color:#2563eb; text-decoration: underline;">
+        {{ resume.work_link }}
+      </a>
+    </p>
+    {% endif %}
+
+    <div class="divider"></div>
+
+    <!-- Summary -->
+    {% if resume.summary %}
+    <section class="mb-6">
+      <h2 class="section-title">Summary</h2>
+      <p class="text-gray-700 leading-relaxed">
+        {{ resume.summary }}
+      </p>
+    </section>
+    {% endif %}
+
+    <!-- Skills -->
+    {% if resume.skills %}
+    <section class="mb-6">
+      <h2 class="section-title">Skills</h2>
+      <p class="text-gray-700 whitespace-pre-line">
+        {{ resume.skills }}
+      </p>
+    </section>
+    {% endif %}
+
+    <!-- Experience -->
+    {% if resume.experience %}
+    <section class="mb-6">
+      <h2 class="section-title">Experience</h2>
+      <p class="text-gray-700 whitespace-pre-line">
+        {{ resume.experience }}
+      </p>
+    </section>
+    {% endif %}
+
+    <!-- Education -->
+    {% if resume.education %}
+    <section class="mb-6">
+      <h2 class="section-title">Education</h2>
+      <p class="text-gray-700 whitespace-pre-line">
+        {{ resume.education }}
+      </p>
+    </section>
+    {% endif %}
+
+  </div>
+</body>
+</html>

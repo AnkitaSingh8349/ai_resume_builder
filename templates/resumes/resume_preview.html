@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Preview{% endblock %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resume Preview</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+  <!-- LEFT PANEL -->
+  <aside class="bg-white rounded-xl shadow p-5">
+    <h2 class="text-lg font-semibold mb-4">Resume Templates</h2>
+
+    <a href="?template=modern"
+       class="block mb-3 px-4 py-3 rounded-lg font-medium border
+       {% if active == 'modern' %}bg-blue-600 text-white{% else %}hover:bg-gray-100{% endif %}">
+      Modern
+    </a>
+
+    <a href="?template=professional"
+       class="block mb-3 px-4 py-3 rounded-lg font-medium border
+       {% if active == 'professional' %}bg-blue-600 text-white{% else %}hover:bg-gray-100{% endif %}">
+      Professional
+    </a>
+
+    <a href="?template=creative"
+       class="block mb-3 px-4 py-3 rounded-lg font-medium border
+       {% if active == 'creative' %}bg-blue-600 text-white{% else %}hover:bg-gray-100{% endif %}">
+      Creative
+    </a>
+
+  <a href="{% url 'resumes:download_resume' resume.id %}?template={{ active }}"
+   class="block mt-6 bg-green-600 text-white text-center py-3 rounded-lg font-semibold">
+  Download PDF
+</a>
+
+  </aside>
+
+  <!-- PREVIEW -->
+  <main class="lg:col-span-3 bg-white rounded-xl shadow p-8 min-h-[900px]">
+    {% include active_template %}
+  </main>
+
+</div>
+<!-- SHARE RESUME LINK (TOP BAR) -->
+<div class="max-w-7xl mx-auto px-4 mt-4">
+  <div class="bg-white p-4 rounded shadow flex flex-col sm:flex-row sm:items-center gap-3">
+
+    <span class="font-semibold whitespace-nowrap">
+      Share Resume Link:
+    </span>
+
+   <input
+  id="shareLink"
+  type="text"
+  value="{{ request.scheme }}://{{ request.get_host }}{% url 'resumes:resume_public' resume.id %}"
+  class="flex-1 p-2 border rounded text-sm"
+  readonly
+>
+
+    <button
+      onclick="copyShareLink()"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+      Copy Link
+    </button>
+
+  </div>
+</div>
+
+<script>
+function copyShareLink() {
+  const input = document.getElementById("shareLink");
+  input.select();
+  input.setSelectionRange(0, 99999); // mobile support
+  navigator.clipboard.writeText(input.value);
+  alert("Resume link copied!");
+}
+</script>
+
+
+</body>
+</html>
+{% endblock %}

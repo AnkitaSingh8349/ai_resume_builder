@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Resume</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: white;
+  color: #111827;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  border-left: 4px solid #4f46e5;
+  padding-left: 24px;
+}
+
+h1 {
+  font-size: 28px;
+  color: #4338ca;
+  font-weight: bold;
+}
+
+.sub {
+  color: #4b5563;
+  margin-bottom: 16px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.title {
+  color: #4f46e5;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>{{ resume.full_name }}</h1>
+
+<p class="sub">
+{{ resume.email }} • {{ resume.phone }}
+</p>
+
+<div class="section">
+<div class="title">About Me</div>
+<p>{{ resume.summary }}</p>
+</div>
+
+<div class="section">
+<div class="title">Skills</div>
+<p>{{ resume.skills }}</p>
+</div>
+
+<div class="section">
+<div class="title">Experience</div>
+<p style="white-space: pre-line">{{ resume.experience }}</p>
+</div>
+
+</div>
+
+</body>
+</html>

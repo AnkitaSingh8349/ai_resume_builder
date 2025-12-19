@@ -27,8 +27,25 @@ SECRET_KEY = 'django-insecure-3sozjm!eob3@phr_!dk5lss8mofm(_u*wldv4)^_o%rl_rq2+i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
+
+# ===============================
+# CKEDITOR CONFIGURATION
+# ===============================
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+CKEDITOR_UPLOAD_PATH = "uploads/"
+
+CKEDITOR_CONFIGS = {
+    "default": {
+        "toolbar": "full",
+        "height": 300,
+        "width": "100%",
+    }
+}
 
 # Application definition
 
@@ -40,11 +57,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # YOUR APPS 👇
+    # THIRD-PARTY APPS
+    "ckeditor",
+    "ckeditor_uploader",
+
+    # YOUR APPS
     "accounts",
     "dashboard",
     "resumes",
- "ai_resume",
+    "ai_resume",
 ]
 
 MIDDLEWARE = [
@@ -131,4 +152,5 @@ LOGOUT_REDIRECT_URL = "/accounts/login/"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-print("GROQ KEY:", os.getenv("GROQ_API_KEY"))
+print("GROQ KEY LOADED:", bool(os.getenv("GROQ_API_KEY")))
+
