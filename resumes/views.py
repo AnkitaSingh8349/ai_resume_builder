@@ -1,6 +1,7 @@
-from weasyprint import HTML
 import json
 import stripe
+from io import BytesIO
+
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -8,6 +9,9 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
 
 from .models import Resume
 from .forms import ResumeForm
@@ -20,7 +24,7 @@ stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
 # ===============================
-# PREMIUM TEMPLATES
+# TEMPLATES
 # ===============================
 FREE_TEMPLATES = ["modern", "professional", "simple"]
 PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
@@ -40,7 +44,7 @@ def create_checkout_session(request):
                 "product_data": {
                     "name": "Premium Resume Download",
                 },
-                "unit_amount": 500,  # $5
+                "unit_amount": 500,
             },
             "quantity": 1,
         }],
@@ -57,7 +61,6 @@ def create_checkout_session(request):
 # ==================================================
 @login_required
 def payment_success(request):
-    # ✅ mark payment done
     request.session["paid_for_download"] = True
 
     resume_id = request.session.get("pending_resume_id")
@@ -99,26 +102,24 @@ def create_resume(request):
 # ==================================================
 # EDIT RESUME
 # ==================================================
-# ==================================================
-# EDIT RESUME  ✅ FIXED VERSION
-# ==================================================
 @login_required
 def edit_resume(request, id):
     resume = get_object_or_404(Resume, id=id, user=request.user)
 
     if request.method == "POST":
-        resume.full_name = request.POST.get("full_name","")
-        resume.email = request.POST.get("email","")
-        resume.phone = request.POST.get("phone","")
-        resume.summary = request.POST.get("summary","")
-        resume.skills = request.POST.get("skills","")   # 🔥 FIX
-        resume.experience = request.POST.get("experience","")
-        resume.education = request.POST.get("education","")
+        resume.full_name = request.POST.get("full_name", "")
+        resume.email = request.POST.get("email", "")
+        resume.phone = request.POST.get("phone", "")
+        resume.summary = request.POST.get("summary", "")
+        resume.skills = request.POST.get("skills", "")
+        resume.experience = request.POST.get("experience", "")
+        resume.education = request.POST.get("education", "")
         resume.save()
 
         return redirect("resumes:resume_preview", id=resume.id)
 
-    return render(request,"resumes/edit.html",{"resume":resume})
+    return render(request, "resumes/edit.html", {"resume": resume})
+
 
 # ==================================================
 # SAVE TEMPLATE (AJAX)
@@ -142,9 +143,6 @@ def save_template(request, id):
 def resume_preview(request, id):
     resume = get_object_or_404(Resume, id=id)
 
-    free_templates = ["modern", "professional", "simple"]
-    premium_templates = PREMIUM_TEMPLATES
-
     active = request.GET.get("template") or resume.template or "modern"
 
     if active != resume.template:
@@ -167,21 +165,20 @@ def resume_preview(request, id):
             "resume": resume,
             "active": active,
             "active_template": template_map.get(active, "modern.html"),
-            "free_templates": free_templates,
-            "premium_templates": premium_templates,
+            "free_templates": FREE_TEMPLATES,
+            "premium_templates": PREMIUM_TEMPLATES,
         },
     )
 
 
 # ==================================================
-# DOWNLOAD PDF (PAYMENT PROTECTED)
+# DOWNLOAD PDF (REPORTLAB VERSION)
 # ==================================================
 @login_required
 def download_resume(request, id):
     resume = get_object_or_404(Resume, id=id, user=request.user)
     active = request.GET.get("template", resume.template or "modern")
 
-    # premium check
     if active in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
             request.session["pending_resume_id"] = resume.id
@@ -192,42 +189,66 @@ def download_resume(request, id):
             )
             return redirect("resumes:checkout")
 
-    template_map = {
-        "modern": "modern.html",
-        "professional": "professional.html",
-        "simple": "simple.html",
-        "creative": "creative.html",
-        "executive": "executive.html",
-        "minimalist": "minimalist.html",
-    }
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
 
-    # 🔽 HTML render
-    html_string = render_to_string(
-        template_map.get(active, "modern.html"),
-        {
-            "resume": resume,
-            "is_pdf": True,
-        }
-    )
+    y = height - 50
 
-    # 🔽 PDF generate (THIS LINE ✅ KEEP HERE)
-    pdf = HTML(
-        string=html_string,
-        base_url=request.build_absolute_uri()
-    ).write_pdf()
+    p.setFont("Helvetica-Bold", 18)
+    p.drawString(50, y, resume.full_name)
+    y -= 30
 
-    # session clear
+    p.setFont("Helvetica", 12)
+    p.drawString(50, y, f"Email: {resume.email}")
+    y -= 20
+    p.drawString(50, y, f"Phone: {resume.phone}")
+    y -= 30
+
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, y, "Summary")
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.textLine(resume.summary or "")
+    y -= 30
+
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, y, "Skills")
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.textLine(resume.skills or "")
+    y -= 30
+
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, y, "Experience")
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.textLine(resume.experience or "")
+    y -= 30
+
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(50, y, "Education")
+    y -= 20
+    p.setFont("Helvetica", 11)
+    p.textLine(resume.education or "")
+
+    p.showPage()
+    p.save()
+
+    buffer.seek(0)
+
     request.session.pop("paid_for_download", None)
     request.session.pop("pending_resume_id", None)
     request.session.pop("pending_template", None)
 
     return HttpResponse(
-        pdf,
+        buffer,
         content_type="application/pdf",
         headers={
             "Content-Disposition": f'attachment; filename="{resume.full_name}.pdf"'
         }
     )
+
 
 # ==================================================
 # SAVE RESUME FIELD (AJAX)
