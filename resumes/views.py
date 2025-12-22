@@ -1,7 +1,6 @@
+from weasyprint import HTML
 import json
-import pdfkit
 import stripe
-
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -182,20 +181,17 @@ def download_resume(request, id):
     resume = get_object_or_404(Resume, id=id, user=request.user)
     active = request.GET.get("template", resume.template or "modern")
 
-    # 🔒 PREMIUM TEMPLATE CHECK
+    # premium check
     if active in PREMIUM_TEMPLATES:
-        # agar payment nahi hua
         if not request.session.get("paid_for_download"):
             request.session["pending_resume_id"] = resume.id
             request.session["pending_template"] = active
-
             messages.warning(
                 request,
                 "This is a premium template. Please complete payment to download."
             )
             return redirect("resumes:checkout")
 
-    # ✅ FREE templates OR payment ke baad hi yahan aayega
     template_map = {
         "modern": "modern.html",
         "professional": "professional.html",
@@ -205,44 +201,33 @@ def download_resume(request, id):
         "minimalist": "minimalist.html",
     }
 
-    html = render_to_string(
+    # 🔽 HTML render
+    html_string = render_to_string(
         template_map.get(active, "modern.html"),
         {
             "resume": resume,
-            "is_pdf": True
+            "is_pdf": True,
         }
     )
 
-    config = pdfkit.configuration(
-        wkhtmltopdf=r"C:\Program Files (x86)\wkhtmltopdf\bin\wkhtmltopdf.exe"
-    )
+    # 🔽 PDF generate (THIS LINE ✅ KEEP HERE)
+    pdf = HTML(
+        string=html_string,
+        base_url=request.build_absolute_uri()
+    ).write_pdf()
 
-    options = {
-        "enable-local-file-access": "",
-        "page-size": "A4",
-        "encoding": "UTF-8",
-        "margin-top": "10mm",
-        "margin-bottom": "10mm",
-        "margin-left": "10mm",
-        "margin-right": "10mm",
-    }
-
-    pdf = pdfkit.from_string(
-        html,
-        False,
-        configuration=config,
-        options=options
-    )
-
-    # 🧹 session clear (important)
+    # session clear
     request.session.pop("paid_for_download", None)
     request.session.pop("pending_resume_id", None)
     request.session.pop("pending_template", None)
 
-    response = HttpResponse(pdf, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{resume.full_name}.pdf"'
-    return response
-
+    return HttpResponse(
+        pdf,
+        content_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{resume.full_name}.pdf"'
+        }
+    )
 
 # ==================================================
 # SAVE RESUME FIELD (AJAX)
