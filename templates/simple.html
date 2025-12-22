@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Resume</title>
+
+<link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+
+<style>
+  body {
+    background:#f3f4f6;
+    font-family: Arial, sans-serif;
+  }
+
+  .page {
+    width: 850px;
+    margin: 40px auto;
+    background: white;
+    padding: 40px;
+    border-top: 6px solid #1e3a8a;
+  }
+
+  .name {
+    font-size: 30px;
+    font-weight: 700;
+    text-align: center;
+    color: #1e3a8a;
+  }
+
+  .contact {
+    text-align: center;
+    font-size: 13px;
+    color: #374151;
+    margin-top: 6px;
+  }
+
+  .hr {
+    border-top: 2px solid #c7d2fe;
+    margin: 20px 0 30px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 65% 35%;
+    gap: 40px;
+  }
+
+  .section {
+    margin-bottom: 25px;
+  }
+
+  .title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #1e3a8a;
+    border-bottom: 1px solid #c7d2fe;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .content p { margin-bottom: 8px; }
+  .content ul { list-style: disc; margin-left: 18px; }
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="name">{{ resume.full_name }}</div>
+  <div class="contact">
+    {{ resume.phone }} &nbsp; • &nbsp; {{ resume.email }}
+  </div>
+
+  <div class="hr"></div>
+
+  <!-- BODY -->
+  <div class="layout">
+
+    <!-- LEFT -->
+    <div>
+      {% if resume.summary %}
+      <div class="section">
+        <div class="title">SUMMARY</div>
+        <div class="content">{{ resume.summary|safe }}</div>
+      </div>
+      {% endif %}
+
+      {% if resume.experience %}
+      <div class="section">
+        <div class="title">EXPERIENCE</div>
+        <div class="content">{{ resume.experience|safe }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT -->
+    <div>
+      {% if resume.skills %}
+      <div class="section">
+        <div class="title">SKILLS</div>
+        <div class="content">{{ resume.skills|safe }}</div>
+      </div>
+      {% endif %}
+
+      {% if resume.education %}
+      <div class="section">
+        <div class="title">EDUCATION</div>
+        <div class="content">{{ resume.education|safe }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

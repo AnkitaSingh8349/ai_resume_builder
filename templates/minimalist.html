@@ -1,0 +1,100 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ resume.full_name }} | Modern Resume</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root { --theme: {{ resume.color|default:"#2563eb" }}; }
+.theme { color: var(--theme); }
+.theme-bg { background: var(--theme); }
+</style>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="max-w-5xl mx-auto my-10 bg-white shadow grid grid-cols-3">
+
+  <!-- SIDEBAR -->
+  <aside class="col-span-1 p-6 theme-bg text-white">
+
+    <div class="relative mx-auto w-28">
+      <img id="photo"
+           src="{% if resume.photo %}{{ resume.photo.url }}{% else %}{% static 'img/user.png' %}{% endif %}"
+           class="rounded-full w-28 h-28 object-cover border-4 border-white">
+      <input type="file" accept="image/*"
+             class="absolute inset-0 opacity-0 cursor-pointer"
+             onchange="preview(event)">
+    </div>
+
+    <h1 class="text-xl font-bold text-center mt-4">
+      {{ resume.full_name }}
+    </h1>
+
+    <p class="text-xs text-center mt-2">
+      {{ resume.email }}<br>{{ resume.phone }}
+    </p>
+
+    <hr class="my-4 opacity-30">
+
+    <h2 class="text-sm font-semibold mb-2">Skills</h2>
+    {{ resume.skills|safe }}
+
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="col-span-2 p-8">
+
+    <div class="flex justify-end gap-3 mb-4">
+      <input type="color" id="colorPicker" value="{{ resume.color|default:'#2563eb' }}">
+      <button onclick="downloadResume()"
+              class="px-4 py-2 text-white rounded theme-bg">
+        Download
+      </button>
+    </div>
+
+    <section class="mb-6">
+      <h2 class="font-semibold text-lg border-b pb-1 mb-2 theme">Profile</h2>
+      {{ resume.summary|safe }}
+    </section>
+
+    <section class="mb-6">
+      <h2 class="font-semibold text-lg border-b pb-1 mb-2 theme">Experience</h2>
+      {{ resume.experience|safe }}
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-lg border-b pb-1 mb-2 theme">Education</h2>
+      {{ resume.education|safe }}
+    </section>
+
+  </main>
+
+</div>
+
+<!-- PAY MODAL -->
+<div id="payModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded text-center">
+    <h2 class="text-xl font-semibold mb-2">Upgrade to Download</h2>
+    <p class="text-sm mb-4">Free limit exceeded</p>
+    <button class="px-4 py-2 bg-green-600 text-white rounded">Pay Now</button>
+  </div>
+</div>
+
+<script>
+function preview(e){ photo.src = URL.createObjectURL(e.target.files[0]); }
+colorPicker.oninput = e =>
+  document.documentElement.style.setProperty("--theme", e.target.value);
+
+function downloadResume(){
+  let c = +localStorage.getItem("dl3") || 0;
+  if(++c > 3){ payModal.classList.remove("hidden"); return; }
+  localStorage.setItem("dl3", c);
+  alert("Downloaded (mock)");
+}
+</script>
+
+</body>
+</html>

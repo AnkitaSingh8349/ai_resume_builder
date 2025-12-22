@@ -3,101 +3,145 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Resume</title>
+  <title>Professional Resume</title>
 
-  <!-- Tailwind compiled CSS -->
   <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
 
-  <!-- Inline professional styling -->
   <style>
     body {
-      font-family: "Arial", sans-serif;
-      color: #1f2937;
-      background: #ffffff;
-    }
-
-    .resume-wrapper {
-      border-top: 4px solid #111827;
-      padding-top: 24px;
-    }
-
-    .section-title {
-      font-size: 13px;
-      letter-spacing: 1px;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
       color: #111827;
-      text-transform: uppercase;
-      border-bottom: 1px solid #d1d5db;
-      padding-bottom: 4px;
-      margin-bottom: 10px;
+    }
+
+    .resume {
+      background: white;
+      max-width: 900px;
+      margin: 40px auto;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      box-shadow: 0 10px 25px rgba(0,0,0,.08);
+    }
+
+    .left {
+      background: #fafafa;
+      padding: 30px 20px;
+      text-align: center;
+      border-right: 1px solid #e5e7eb;
+    }
+
+    .avatar {
+      width: 80px;
+      height: 80px;
+      background: #000;
+      color: #ef4444;
+      font-size: 36px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+    }
+
+    .name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #dc2626;
     }
 
     .contact {
-      color: #4b5563;
-      font-size: 13px;
+      font-size: 12px;
+      color: #374151;
+      margin-top: 10px;
+      line-height: 1.5;
     }
 
-    .divider {
-      border-top: 1px solid #e5e7eb;
-      margin: 24px 0;
+    .right {
+      padding: 30px;
     }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 10px;
+      padding-bottom: 4px;
+    }
+
+    .content p { margin-bottom: 8px; }
+    .content ul { list-style: disc; margin-left: 20px; }
+    .content strong { font-weight: bold; }
   </style>
 </head>
 
 <body>
-  <div class="max-w-4xl mx-auto text-sm resume-wrapper">
 
-    <!-- Header -->
-    <div class="text-center mb-6">
-      <h1 class="text-4xl font-bold tracking-wide text-gray-900">
-        {{ resume.full_name }}
-      </h1>
-      <p class="contact mt-2">
-        {{ resume.email }} | {{ resume.phone }}
-      </p>
+<div class="resume">
+
+  <!-- LEFT COLUMN -->
+  <div class="left">
+    <div class="avatar">
+      {{ resume.full_name|slice:":1"|upper }}
     </div>
 
-    <div class="divider"></div>
+    <div class="name">
+      {{ resume.full_name }}
+    </div>
 
-    <!-- Profile -->
+    <div class="contact">
+      {{ resume.phone }}<br>
+      {{ resume.email }}<br><br>
+      New Delhi, India
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right">
+
     {% if resume.summary %}
-    <section class="mb-5">
-      <h2 class="section-title">Profile</h2>
-      <p class="text-gray-700 leading-relaxed">
-        {{ resume.summary }}
-      </p>
-    </section>
+    <div class="section">
+      <div class="section-title">SUMMARY</div>
+      <div class="content">
+        {{ resume.summary|safe }}
+      </div>
+    </div>
     {% endif %}
 
-    <!-- Skills -->
     {% if resume.skills %}
-    <section class="mb-5">
-      <h2 class="section-title">Skills</h2>
-      <p class="text-gray-700">
-        {{ resume.skills }}
-      </p>
-    </section>
+    <div class="section">
+      <div class="section-title">SKILLS</div>
+      <div class="content">
+        {{ resume.skills|safe }}
+      </div>
+    </div>
     {% endif %}
 
-    <!-- Experience -->
     {% if resume.experience %}
-    <section class="mb-5">
-      <h2 class="section-title">Experience</h2>
-      <p class="text-gray-700 whitespace-pre-line leading-relaxed">
-        {{ resume.experience }}
-      </p>
-    </section>
+    <div class="section">
+      <div class="section-title">EXPERIENCE</div>
+      <div class="content">
+        {{ resume.experience|safe }}
+      </div>
+    </div>
     {% endif %}
 
-    <!-- Education -->
     {% if resume.education %}
-    <section>
-      <h2 class="section-title">Education</h2>
-      <p class="text-gray-700 whitespace-pre-line">
-        {{ resume.education }}
-      </p>
-    </section>
+    <div class="section">
+      <div class="section-title">EDUCATION AND TRAINING</div>
+      <div class="content">
+        {{ resume.education|safe }}
+      </div>
+    </div>
     {% endif %}
 
   </div>
+
+</div>
+
 </body>
 </html>

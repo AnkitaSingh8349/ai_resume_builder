@@ -34,6 +34,13 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 # CKEDITOR CONFIGURATION
 # ===============================
 
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+
+print("STRIPE PUBLIC:", bool(STRIPE_PUBLIC_KEY))
+print("STRIPE SECRET:", bool(STRIPE_SECRET_KEY))
+
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -62,7 +69,7 @@ INSTALLED_APPS = [
     "ckeditor_uploader",
 
     # YOUR APPS
-    "accounts",
+    "accounts.apps.AccountsConfig",
     "dashboard",
     "resumes",
     "ai_resume",
@@ -143,7 +150,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = "/static/"
+
 
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/dashboard/"

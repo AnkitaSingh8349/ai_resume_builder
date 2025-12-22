@@ -1,92 +1,177 @@
 {% extends "base.html" %}
-
-{% block title %}Resume Preview{% endblock %}
+{% block title %}Choose Resume Template{% endblock %}
 
 {% block content %}
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Resume Preview</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
+<!-- PAGE HEADER -->
+<section class="max-w-7xl mx-auto px-4 py-6">
+  <h1 class="text-3xl font-bold text-gray-900 text-center">
+    Templates we recommend for you
+  </h1>
+  <p class="text-center text-gray-500 mt-2">
+    You can always change your template later.
+  </p>
+</section>
 
-<body class="bg-gray-100 min-h-screen">
+<!-- MAIN CONTENT -->
+<section class="max-w-7xl mx-auto px-4 pb-10">
 
-<div class="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-8">
 
-  <!-- LEFT PANEL -->
-  <aside class="bg-white rounded-xl shadow p-5">
-    <h2 class="text-lg font-semibold mb-4">Resume Templates</h2>
+    <!-- ================= LEFT PANEL ================= -->
+    <aside class="bg-white rounded-2xl shadow-sm border p-5
+                  lg:sticky lg:top-24 h-fit">
 
-    <a href="?template=modern"
-       class="block mb-3 px-4 py-3 rounded-lg font-medium border
-       {% if active == 'modern' %}bg-blue-600 text-white{% else %}hover:bg-gray-100{% endif %}">
-      Modern
-    </a>
+      <h2 class="text-lg font-semibold mb-4 text-gray-800">
+        Choose Template
+      </h2>
 
-    <a href="?template=professional"
-       class="block mb-3 px-4 py-3 rounded-lg font-medium border
-       {% if active == 'professional' %}bg-blue-600 text-white{% else %}hover:bg-gray-100{% endif %}">
-      Professional
-    </a>
+      <!-- TEMPLATE LIST -->
+      <div class="space-y-3">
 
-    <a href="?template=creative"
-       class="block mb-3 px-4 py-3 rounded-lg font-medium border
-       {% if active == 'creative' %}bg-blue-600 text-white{% else %}hover:bg-gray-100{% endif %}">
-      Creative
-    </a>
+        <!-- FREE -->
+        <a href="?template=modern"
+           class="flex items-center justify-between px-4 py-3 rounded-xl border
+           transition
+           {% if active == 'modern' %}
+             bg-indigo-600 text-white shadow
+           {% else %}
+             hover:bg-gray-50
+           {% endif %}">
+          <span class="font-medium">Modern</span>
+        </a>
 
-  <a href="{% url 'resumes:download_resume' resume.id %}?template={{ active }}"
-   class="block mt-6 bg-green-600 text-white text-center py-3 rounded-lg font-semibold">
-  Download PDF
-</a>
+        <a href="?template=professional"
+           class="flex items-center justify-between px-4 py-3 rounded-xl border
+           transition
+           {% if active == 'professional' %}
+             bg-indigo-600 text-white shadow
+           {% else %}
+             hover:bg-gray-50
+           {% endif %}">
+          <span class="font-medium">Professional</span>
+        </a>
 
-  </aside>
+        <a href="?template=simple"
+           class="flex items-center justify-between px-4 py-3 rounded-xl border
+           transition
+           {% if active == 'simple' %}
+             bg-indigo-600 text-white shadow
+           {% else %}
+             hover:bg-gray-50
+           {% endif %}">
+          <span class="font-medium">Simple</span>
+        </a>
 
-  <!-- PREVIEW -->
-  <main class="lg:col-span-3 bg-white rounded-xl shadow p-8 min-h-[900px]">
-    {% include active_template %}
-  </main>
+        <div class="pt-3 border-t"></div>
 
-</div>
-<!-- SHARE RESUME LINK (TOP BAR) -->
-<div class="max-w-7xl mx-auto px-4 mt-4">
-  <div class="bg-white p-4 rounded shadow flex flex-col sm:flex-row sm:items-center gap-3">
+        <!-- PREMIUM -->
+        <a href="?template=creative"
+           class="flex items-center justify-between px-4 py-3 rounded-xl border
+           transition
+           {% if active == 'creative' %}
+             bg-purple-600 text-white shadow
+           {% else %}
+             hover:bg-gray-50
+           {% endif %}">
+          <span class="font-medium">Creative</span>
+          <span class="text-xs bg-yellow-400 text-black px-2 py-1 rounded-full">
+            Premium
+          </span>
+        </a>
 
-    <span class="font-semibold whitespace-nowrap">
+        <a href="?template=executive"
+           class="flex items-center justify-between px-4 py-3 rounded-xl border
+           transition
+           {% if active == 'executive' %}
+             bg-purple-600 text-white shadow
+           {% else %}
+             hover:bg-gray-50
+           {% endif %}">
+          <span class="font-medium">Executive</span>
+          <span class="text-xs bg-yellow-400 text-black px-2 py-1 rounded-full">
+            Premium
+          </span>
+        </a>
+
+        <a href="?template=minimalist"
+           class="flex items-center justify-between px-4 py-3 rounded-xl border
+           transition
+           {% if active == 'minimalist' %}
+             bg-purple-600 text-white shadow
+           {% else %}
+             hover:bg-gray-50
+           {% endif %}">
+          <span class="font-medium">Minimalist</span>
+          <span class="text-xs bg-yellow-400 text-black px-2 py-1 rounded-full">
+            Premium
+          </span>
+        </a>
+
+      </div>
+
+      <!-- DOWNLOAD -->
+      <a href="{% url 'resumes:download_resume' resume.id %}?template={{ active }}"
+         class="mt-6 block text-center bg-green-600 hover:bg-green-700
+                text-white font-semibold py-3 rounded-xl">
+        Download PDF
+      </a>
+
+    </aside>
+
+    <!-- ================= RIGHT PREVIEW ================= -->
+    <main class="bg-white rounded-2xl border shadow-sm p-6 md:p-10">
+
+      <!-- PREVIEW HEADER -->
+      <div class="flex justify-between items-center mb-6">
+        <p class="text-sm text-gray-500 uppercase tracking-wide">
+          Resume Preview
+        </p>
+      </div>
+
+      <!-- PAPER LOOK -->
+      <div class="max-w-[850px] mx-auto">
+        {% include active_template %}
+      </div>
+
+    </main>
+
+  </div>
+
+</section>
+
+<!-- ================= SHARE LINK (DO NOT SKIP) ================= -->
+<section class="max-w-7xl mx-auto px-4 pb-10">
+  <div class="bg-white border rounded-xl p-4 shadow-sm
+              flex flex-col sm:flex-row gap-3 items-center">
+
+    <span class="font-medium whitespace-nowrap">
       Share Resume Link:
     </span>
 
-   <input
-  id="shareLink"
-  type="text"
-  value="{{ request.scheme }}://{{ request.get_host }}{% url 'resumes:resume_public' resume.id %}"
-  class="flex-1 p-2 border rounded text-sm"
-  readonly
->
+    <input id="shareLink"
+           type="text"
+           value="{{ request.scheme }}://{{ request.get_host }}{% url 'resumes:resume_public' resume.id %}"
+           class="flex-1 p-2 border rounded text-sm"
+           readonly>
 
-    <button
-      onclick="copyShareLink()"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+    <button onclick="copyShareLink()"
+            class="bg-indigo-600 hover:bg-indigo-700
+                   text-white px-4 py-2 rounded">
       Copy Link
     </button>
 
   </div>
-</div>
+</section>
 
 <script>
 function copyShareLink() {
   const input = document.getElementById("shareLink");
   input.select();
-  input.setSelectionRange(0, 99999); // mobile support
+  input.setSelectionRange(0, 99999);
   navigator.clipboard.writeText(input.value);
   alert("Resume link copied!");
 }
 </script>
 
-
-</body>
-</html>
 {% endblock %}

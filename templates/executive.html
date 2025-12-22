@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ resume.full_name }} | Executive Resume</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root { --theme: {{ resume.color|default:"#1f2937" }}; }
+.theme { color: var(--theme); }
+.theme-bg { background: var(--theme); }
+.theme-border { border-color: var(--theme); }
+</style>
+</head>
+
+<body class="bg-gray-200">
+
+<div class="max-w-4xl mx-auto bg-white p-10 my-12 shadow-lg">
+
+  <!-- CONTROLS -->
+  <div class="flex justify-end gap-3 mb-6">
+    <input type="color" id="colorPicker" value="{{ resume.color|default:'#1f2937' }}">
+    <button onclick="downloadResume()" class="px-4 py-2 text-white theme-bg rounded">
+      Download
+    </button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="flex gap-8 items-center border-b pb-6 mb-8">
+    <div class="relative">
+      <img id="photo"
+           src="{% if resume.photo %}{{ resume.photo.url }}{% else %}{% static 'img/user.png' %}{% endif %}"
+           class="w-32 h-32 rounded object-cover border-4 theme-border">
+      <input type="file" accept="image/*"
+             class="absolute inset-0 opacity-0 cursor-pointer"
+             onchange="preview(event)">
+    </div>
+
+    <div>
+      <h1 class="text-4xl font-bold theme uppercase">{{ resume.full_name }}</h1>
+      <p class="text-sm text-gray-600 mt-2">
+        {{ resume.email }} • {{ resume.phone }}
+      </p>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <section class="mb-8">
+    <h2 class="font-bold text-sm uppercase tracking-widest theme mb-2">Executive Summary</h2>
+    <p class="text-sm leading-relaxed">{{ resume.summary|safe }}</p>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section class="mb-8">
+    <h2 class="font-bold text-sm uppercase tracking-widest theme mb-4">Experience</h2>
+    {{ resume.experience|safe }}
+  </section>
+
+  <!-- EDUCATION -->
+  <section>
+    <h2 class="font-bold text-sm uppercase tracking-widest theme mb-4">Education</h2>
+    {{ resume.education|safe }}
+  </section>
+
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="payModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center">
+  <div class="bg-white p-6 rounded text-center">
+    <h2 class="text-xl font-semibold mb-2">Premium Required</h2>
+    <p class="text-sm text-gray-600 mb-4">3 free downloads used.</p>
+    <button class="px-4 py-2 bg-green-600 text-white rounded">Pay Now</button>
+  </div>
+</div>
+
+<script>
+function preview(e){ photo.src = URL.createObjectURL(e.target.files[0]); }
+colorPicker.oninput = e =>
+  document.documentElement.style.setProperty("--theme", e.target.value);
+
+function downloadResume(){
+  let c = +localStorage.getItem("dl2") || 0;
+  if(++c > 3){ payModal.classList.remove("hidden"); return; }
+  localStorage.setItem("dl2", c);
+  alert("Downloaded (mock)");
+}
+</script>
+
+</body>
+</html>

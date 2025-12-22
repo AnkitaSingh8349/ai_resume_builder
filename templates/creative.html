@@ -1,73 +1,150 @@
+{% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Resume</title>
+  <meta charset="UTF-8">
+  <title>{{ resume.full_name }} | Resume</title>
 
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: white;
-  color: #111827;
-}
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-.container {
-  max-width: 800px;
-  margin: auto;
-  border-left: 4px solid #4f46e5;
-  padding-left: 24px;
-}
-
-h1 {
-  font-size: 28px;
-  color: #4338ca;
-  font-weight: bold;
-}
-
-.sub {
-  color: #4b5563;
-  margin-bottom: 16px;
-}
-
-.section {
-  margin-bottom: 24px;
-}
-
-.title {
-  color: #4f46e5;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-</style>
-
+  <style>
+    :root {
+      --theme-color: {{ resume.color|default:"#2563eb" }};
+    }
+    .theme-color { color: var(--theme-color); }
+    .theme-border { border-color: var(--theme-color); }
+  </style>
 </head>
 
-<body>
+<body class="bg-gray-100">
 
-<div class="container">
+<div class="max-w-4xl mx-auto bg-white p-8 my-10 rounded-lg shadow relative">
 
-<h1>{{ resume.full_name }}</h1>
+  <!-- ================= CONTROLS ================= -->
+  <div class="flex justify-end gap-4 mb-6 text-sm">
+    <!-- Color Picker -->
+    <input type="color" id="colorPicker" value="{{ resume.color|default:'#2563eb' }}"
+           class="w-8 h-8 cursor-pointer">
 
-<p class="sub">
-{{ resume.email }} • {{ resume.phone }}
-</p>
+    <!-- Download -->
+    <button onclick="downloadResume()"
+            class="px-4 py-2 rounded text-white bg-blue-600 hover:bg-blue-700">
+      Download PDF
+    </button>
+  </div>
 
-<div class="section">
-<div class="title">About Me</div>
-<p>{{ resume.summary }}</p>
+  <!-- ================= HEADER ================= -->
+  <div class="flex items-center gap-6 mb-8">
+
+    <!-- PHOTO UPLOAD -->
+    <div class="relative cursor-pointer">
+      <img id="profileImage"
+           src="{% if resume.photo %}{{ resume.photo.url }}{% else %}{% static 'img/user.png' %}{% endif %}"
+           class="w-28 h-28 rounded-full object-cover border-4 theme-border">
+
+      <input type="file" accept="image/*"
+             class="absolute inset-0 opacity-0 cursor-pointer"
+             onchange="previewImage(event)">
+    </div>
+
+    <!-- NAME -->
+    <div>
+      <h1 class="text-3xl font-bold theme-color">
+        {{ resume.full_name }}
+      </h1>
+      <p class="text-sm text-gray-600 mt-1">
+        {{ resume.email }} • {{ resume.phone }}
+      </p>
+    </div>
+
+  </div>
+
+  <!-- ================= SUMMARY ================= -->
+  {% if resume.summary %}
+  <section class="mb-6">
+    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Summary</h2>
+    <div class="text-sm leading-relaxed">
+      {{ resume.summary|safe }}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ================= SKILLS ================= -->
+  {% if resume.skills %}
+  <section class="mb-6">
+    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Skills</h2>
+    <div class="text-sm leading-relaxed">
+      {{ resume.skills|safe }}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ================= EXPERIENCE ================= -->
+  {% if resume.experience %}
+  <section class="mb-6">
+    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Experience</h2>
+    <div class="text-sm leading-relaxed">
+      {{ resume.experience|safe }}
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- ================= EDUCATION ================= -->
+  {% if resume.education %}
+  <section>
+    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Education</h2>
+    <div class="text-sm leading-relaxed">
+      {{ resume.education|safe }}
+    </div>
+  </section>
+  {% endif %}
+
 </div>
 
-<div class="section">
-<div class="title">Skills</div>
-<p>{{ resume.skills }}</p>
+<!-- ================= PAYMENT MODAL ================= -->
+<div id="payModal"
+     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+
+  <div class="bg-white p-6 rounded shadow max-w-sm text-center">
+    <h2 class="text-xl font-semibold mb-2">Upgrade Required</h2>
+    <p class="text-sm text-gray-600 mb-4">
+      You have used all 3 free downloads.
+    </p>
+    <button class="px-4 py-2 bg-green-600 text-white rounded">
+      Pay & Download
+    </button>
+  </div>
+
 </div>
 
-<div class="section">
-<div class="title">Experience</div>
-<p style="white-space: pre-line">{{ resume.experience }}</p>
-</div>
+<!-- ================= SCRIPT ================= -->
+<script>
+  /* Photo Preview */
+  function previewImage(event) {
+    const img = document.getElementById("profileImage");
+    img.src = URL.createObjectURL(event.target.files[0]);
+  }
 
-</div>
+  /* Color Picker */
+  document.getElementById("colorPicker").addEventListener("input", function (e) {
+    document.documentElement.style.setProperty("--theme-color", e.target.value);
+  });
+
+  /* Download Limit */
+  function downloadResume() {
+    let count = localStorage.getItem("downloadCount") || 0;
+    count++;
+
+    if (count > 3) {
+      document.getElementById("payModal").classList.remove("hidden");
+      return;
+    }
+
+    localStorage.setItem("downloadCount", count);
+    alert("Resume downloaded (mock)");
+  }
+</script>
 
 </body>
 </html>

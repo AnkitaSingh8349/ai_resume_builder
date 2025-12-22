@@ -10,4 +10,11 @@ urlpatterns = [
     path("download/<int:id>/", views.download_resume, name="download_resume"),
     path("public/<int:id>/", views.resume_public, name="resume_public"),
     path("my/", views.my_resumes, name="my_resumes"),
+    path("save-field/<int:id>/", views.save_resume_field, name="save_resume_field"),
+
+    # ===============================
+    # STRIPE PAYMENT ROUTES
+    # ===============================
+    path("checkout/", views.create_checkout_session, name="checkout"),
+    path("payment-success/", views.payment_success, name="payment_success"),
 ]

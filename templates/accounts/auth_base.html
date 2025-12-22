@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{# 🔒 Disable scrolling ONLY on login page #}
+{% block body_class %}
+overflow-hidden
+{% endblock %}
+
+{% block title %}
+Login | AI Resume Builder
+{% endblock %}
+
+{% block content %}
+<section
+    class="h-screen flex items-center justify-center px-4
+           bg-cover bg-center relative"
+    style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1800&q=80');"
+>
+
+    {# 🔙 BACK BUTTON (previous page → home fallback) #}
+    <a href="{% url 'home' %}"
+       onclick="if (document.referrer) { event.preventDefault(); window.history.back(); }"
+       class="absolute top-24 left-5 z-30 px-5 py-2.5 rounded-full
+              bg-emerald-500/90 text-white font-semibold
+              hover:bg-emerald-600 transition">
+        ← Back
+    </a>
+
+    {# 🌈 BACKGROUND OVERLAY #}
+    <div class="absolute inset-0 bg-gradient-to-br
+                from-sky-500/60 via-indigo-500/60 to-purple-600/60"></div>
+
+    {# 📦 LOGIN CONTAINER #}
+    <div class="relative w-full max-w-5xl grid grid-cols-1 md:grid-cols-2
+                bg-white/20 backdrop-blur-2xl rounded-2xl
+                shadow-2xl overflow-hidden z-10">
+
+        {# LEFT PANEL #}
+        <div class="hidden md:flex items-center justify-center p-10 bg-white/10">
+            <div class="text-center text-white">
+                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png"
+                     alt="Resume Icon"
+                     class="w-60 mx-auto mb-6">
+                <h2 class="text-2xl font-bold">AI Resume Builder</h2>
+                <p class="text-white/80 mt-2">
+                    Build professional resumes using AI
+                </p>
+            </div>
+        </div>
+
+        {# RIGHT PANEL (FORM) #}
+        <div class="p-6 sm:p-10">
+            {% block auth_form %}{% endblock %}
+        </div>
+
+    </div>
+</section>
+{% endblock %}
