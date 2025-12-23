@@ -1,5 +1,4 @@
 import json
-import stripe
 from io import BytesIO
 
 from django.conf import settings
@@ -7,7 +6,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
-from django.template.loader import render_to_string
 from django.urls import reverse
 
 from reportlab.pdfgen import canvas
@@ -18,9 +16,15 @@ from .forms import ResumeForm
 
 
 # ===============================
-# STRIPE CONFIG
+# STRIPE SAFE LOADER (FIX)
 # ===============================
-stripe.api_key = settings.STRIPE_SECRET_KEY
+def get_stripe():
+    if not settings.STRIPE_SECRET_KEY:
+        raise RuntimeError("STRIPE_SECRET_KEY is not configured")
+
+    import stripe
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    return stripe
 
 
 # ===============================
@@ -35,6 +39,8 @@ PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
 # ==================================================
 @login_required
 def create_checkout_session(request):
+    stripe = get_stripe()
+
     session = stripe.checkout.Session.create(
         payment_method_types=["card"],
         mode="payment",
@@ -172,14 +178,13 @@ def resume_preview(request, id):
 
 
 # ==================================================
-# DOWNLOAD PDF (REPORTLAB VERSION)
+# DOWNLOAD PDF
 # ==================================================
 @login_required
 def download_resume(request, id):
     resume = get_object_or_404(Resume, id=id, user=request.user)
     active = request.GET.get("template", resume.template or "modern")
 
-    # 🔐 Premium template payment check
     if active in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
             request.session["pending_resume_id"] = resume.id
@@ -196,7 +201,6 @@ def download_resume(request, id):
 
     y = height - 50
 
-    # ================= HEADER =================
     p.setFont("Helvetica-Bold", 18)
     p.drawString(50, y, resume.full_name or "")
     y -= 30
@@ -207,7 +211,6 @@ def download_resume(request, id):
     p.drawString(50, y, f"Phone: {resume.phone or ''}")
     y -= 30
 
-    # ================= SUMMARY =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Summary")
     y -= 20
@@ -219,7 +222,6 @@ def download_resume(request, id):
     p.drawText(text)
     y -= 40
 
-    # ================= SKILLS =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Skills")
     y -= 20
@@ -231,7 +233,6 @@ def download_resume(request, id):
     p.drawText(text)
     y -= 40
 
-    # ================= EXPERIENCE =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Experience")
     y -= 20
@@ -243,7 +244,6 @@ def download_resume(request, id):
     p.drawText(text)
     y -= 40
 
-    # ================= EDUCATION =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Education")
     y -= 20
@@ -254,13 +254,11 @@ def download_resume(request, id):
         text.textLine(line)
     p.drawText(text)
 
-    # ================= FINALIZE PDF =================
     p.showPage()
     p.save()
 
     buffer.seek(0)
 
-    # 🧹 Clear payment session flags
     request.session.pop("paid_for_download", None)
     request.session.pop("pending_resume_id", None)
     request.session.pop("pending_template", None)
