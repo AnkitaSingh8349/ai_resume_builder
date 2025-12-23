@@ -1,5 +1,6 @@
 import json
 import os
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
@@ -18,6 +19,9 @@ def get_groq_client():
     return Groq(api_key=api_key)
 
 
+# ===============================
+# AI RESUME IMPROVE
+# ===============================
 @csrf_exempt
 def ai_resume_improve(request):
     """
