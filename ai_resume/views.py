@@ -1,11 +1,21 @@
 import json
 import os
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from groq import Groq
 from django.core.cache import cache
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+# ===============================
+# GROQ SAFE LOADER (FIX)
+# ===============================
+def get_groq_client():
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise RuntimeError("GROQ_API_KEY is not configured")
+
+    from groq import Groq
+    return Groq(api_key=api_key)
 
 
 @csrf_exempt
@@ -19,14 +29,13 @@ def ai_resume_improve(request):
         return JsonResponse({"error": "Invalid request method"}, status=400)
 
     # --------------------------------------------------
-    # 🔐 RATE LIMIT (FIXED: PER PAGE + HIGHER LIMIT)
+    # 🔐 RATE LIMIT
     # --------------------------------------------------
     user_id = request.user.id if request.user.is_authenticated else "anon"
-    page = request.META.get("HTTP_REFERER", "unknown")[:50]  # avoid long keys
+    page = request.META.get("HTTP_REFERER", "unknown")[:50]
 
     rate_key = f"ai_limit_{user_id}_{page}"
-
-    MAX_REQ_PER_MIN = 20   # ✅ increased for dev/testing
+    MAX_REQ_PER_MIN = 20
 
     current = cache.get(rate_key, 0)
     if current >= MAX_REQ_PER_MIN:
@@ -52,9 +61,11 @@ def ai_resume_improve(request):
         return JsonResponse({"error": "Empty text"}, status=400)
 
     # --------------------------------------------------
-    # 🤖 GROQ AI CALL
+    # 🤖 GROQ AI CALL (SAFE)
     # --------------------------------------------------
     try:
+        client = get_groq_client()
+
         completion = client.chat.completions.create(
             model="llama-3.1-8b-instant",
             messages=[
@@ -72,17 +83,13 @@ def ai_resume_improve(request):
         )
 
         if not completion.choices:
-            cache.set(rate_key, max(0, cache.get(rate_key, 1) - 1), timeout=60)
             return JsonResponse({"error": "No AI response"}, status=500)
 
         message = completion.choices[0].message
         if not message or not message.content:
-            cache.set(rate_key, max(0, cache.get(rate_key, 1) - 1), timeout=60)
             return JsonResponse({"error": "Empty AI content"}, status=500)
 
-        return JsonResponse({
-            "result": message.content.strip()
-        })
+        return JsonResponse({"result": message.content.strip()})
 
     except Exception as exc:
         if "rate" in str(exc).lower():
