@@ -1,6 +1,5 @@
 import json
 import os
-
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
@@ -10,11 +9,12 @@ from django.core.cache import cache
 # GROQ SAFE LOADER (FIX)
 # ===============================
 def get_groq_client():
+    from groq import Groq
+
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise RuntimeError("GROQ_API_KEY is not configured")
 
-    from groq import Groq
     return Groq(api_key=api_key)
 
 
@@ -29,7 +29,7 @@ def ai_resume_improve(request):
         return JsonResponse({"error": "Invalid request method"}, status=400)
 
     # --------------------------------------------------
-    # 🔐 RATE LIMIT
+    # RATE LIMIT
     # --------------------------------------------------
     user_id = request.user.id if request.user.is_authenticated else "anon"
     page = request.META.get("HTTP_REFERER", "unknown")[:50]
@@ -47,21 +47,19 @@ def ai_resume_improve(request):
     cache.set(rate_key, current + 1, timeout=60)
 
     # --------------------------------------------------
-    # 📥 READ JSON INPUT
+    # READ INPUT
     # --------------------------------------------------
     try:
         payload = json.loads(request.body)
         text = payload.get("text", "").strip()
     except Exception:
-        cache.set(rate_key, max(0, cache.get(rate_key, 1) - 1), timeout=60)
         return JsonResponse({"error": "Invalid JSON"}, status=400)
 
     if not text:
-        cache.set(rate_key, max(0, cache.get(rate_key, 1) - 1), timeout=60)
         return JsonResponse({"error": "Empty text"}, status=400)
 
     # --------------------------------------------------
-    # 🤖 GROQ AI CALL (SAFE)
+    # GROQ AI CALL
     # --------------------------------------------------
     try:
         client = get_groq_client()
@@ -82,19 +80,9 @@ def ai_resume_improve(request):
             max_tokens=120,
         )
 
-        if not completion.choices:
-            return JsonResponse({"error": "No AI response"}, status=500)
-
-        message = completion.choices[0].message
-        if not message or not message.content:
-            return JsonResponse({"error": "Empty AI content"}, status=500)
-
-        return JsonResponse({"result": message.content.strip()})
+        return JsonResponse({
+            "result": completion.choices[0].message.content.strip()
+        })
 
     except Exception as exc:
-        if "rate" in str(exc).lower():
-            return JsonResponse(
-                {"error": "AI provider rate limit reached. Please wait."},
-                status=429
-            )
         return JsonResponse({"error": str(exc)}, status=500)
