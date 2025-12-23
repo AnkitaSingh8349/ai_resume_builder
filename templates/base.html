@@ -2,94 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}AI Resume Builder{% endblock %}</title>
+    <title>{% block title %}Resume Builder{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Tailwind -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        .glass {
-            backdrop-filter: blur(12px);
-            background: rgba(255, 255, 255, 0.15);
-        }
-    </style>
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
 
-<!-- ✅ MESSAGES -->
-{% if messages %}
-<div class="fixed top-5 right-5 z-50 space-y-3">
-    {% for message in messages %}
-    <div class="px-4 py-3 rounded-lg shadow-lg text-white text-sm
-        {% if message.tags == 'success' %} bg-green-600 {% endif %}
-        {% if message.tags == 'error' %} bg-red-600 {% endif %}
-        {% if message.tags == 'warning' %} bg-yellow-500 {% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
+<!-- ================= FIXED NAVBAR ================= -->
+<header class="fixed top-0 left-0 w-full z-50 bg-white shadow">
 
-<!-- 🔝 NAVBAR -->
-{% block navbar %}
-<header class="bg-white shadow sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <!-- TOP BAR -->
+    <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
         <!-- LOGO -->
-        <a href="{% url 'home' %}" class="text-xl font-bold text-indigo-600">
-            🏠 Resume Builder
+        <a href="{% url 'home' %}" class="flex items-center gap-2 text-2xl font-bold text-indigo-600">
+            🏠 <span>Resume Builder</span>
         </a>
 
         <!-- NAV LINKS -->
-        <nav class="flex items-center gap-4 text-sm font-medium">
+        <nav class="flex items-center gap-6 text-sm font-semibold text-gray-700">
 
-            <!-- ✅ BACK BUTTON -->
-            <a href="{% url 'home' %}"
-               onclick="if (document.referrer) { event.preventDefault(); window.history.back(); }"
-               class="text-gray-700 hover:text-indigo-600">
+            <!-- BACK -->
+            <a href="javascript:history.back()"
+               class="hover:text-indigo-600 transition">
                 ← Back
             </a>
 
             <!-- HOME -->
-            <a href="{% url 'home' %}" class="text-gray-700 hover:text-indigo-600">
+            <a href="{% url 'home' %}"
+               class="hover:text-indigo-600 transition">
                 Home
             </a>
 
+            <!-- CREATE RESUME -->
+            <a href="/resume/create/"
+               class="hover:text-indigo-600 transition">
+                Create Resume
+            </a>
+
+            <!-- LOGOUT -->
             {% if user.is_authenticated %}
-                <a href="/resume/create/" class="text-gray-700 hover:text-indigo-600">
-                    Create Resume
-                </a>
-                <a href="/accounts/logout/"
-                   class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-                    Logout
-                </a>
-            {% else %}
-                <a href="/accounts/login/" class="text-gray-700 hover:text-indigo-600">
-                    Login
-                </a>
-                <a href="/accounts/register/"
-                   class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                    Sign Up
-                </a>
+            <a href="{% url 'logout' %}"
+               class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition">
+                Logout
+            </a>
             {% endif %}
+
         </nav>
-
     </div>
-</header>
-{% endblock %}
 
-<!-- 📄 CONTENT -->
-<main>
+    <!-- PURPLE STRIP -->
+    <div class="h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+</header>
+
+<!-- ================= PAGE CONTENT ================= -->
+<main class="pt-28">
     {% block content %}{% endblock %}
 </main>
-<style>
-.cke_notifications_area {
-    display: none !important;
-}
-</style>
-
 
 </body>
 </html>

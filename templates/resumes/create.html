@@ -1,189 +1,607 @@
 {% extends "base.html" %}
+
+{% block title %}Create Resume{% endblock %}
+
+{% block body_class %}
+bg-gray-100
+{% endblock %}
+
 {% block content %}
 
-<div class="min-h-screen bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 
-            flex items-center justify-center px-4 py-6">
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- MAIN CARD -->
-  <div class="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden
-              grid grid-cols-1 lg:grid-cols-2">
+  <style>
+ body::before{
+  content: "";
+  position: fixed;
+  inset: 0;
 
-    <!-- LEFT IMAGE / INFO -->
-    <div class="hidden lg:flex flex-col justify-between p-10 text-white
-                bg-cover bg-center"
-         style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d');">
+  /* SAME AI IMAGE */
+  background-image: url("https://images.unsplash.com/photo-1676299081847-824916de030a?auto=format&fit=crop&w=1600&q=80");
 
-      <div class="bg-black/40 p-6 rounded-xl">
-        <h2 class="text-3xl font-bold mb-3">AI Resume Builder</h2>
-        <p class="text-sm">
-          Create a professional, ATS-friendly resume with smart AI suggestions.
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  /* 👇 VERY SLIGHT TRANSPARENCY */
+  opacity: 0.35;
+  filter: blur(0.4px);
+
+  z-index: -1;
+  pointer-events: none;
+}
+
+    /* glass card */
+    .glass {
+      background-color: rgba(255,255,255,0.55);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.6);
+    }
+
+    /* button ai gradient */
+    .btn-ai {
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      color: white;
+    }
+
+    /* new-item blue highlight */
+    .highlight-new {
+      background-color: rgba(59,130,246,0.12) !important;
+      border: 1px solid rgba(59,130,246,0.35);
+      animation: pulseBlue 1.2s ease-in-out;
+    }
+
+    @keyframes pulseBlue {
+      0% { box-shadow: 0 0 0 0 rgba(59,130,246,0.45); }
+      100% { box-shadow: 0 0 0 12px rgba(59,130,246,0); }
+    }
+
+    /* small input remove default focus outline and add subtle shadow */
+    .input {
+      outline: none;
+      box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+    }
+
+    /* modal backdrop blur override */
+    #modal.bg-black\/40 {
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+<div class="max-w-4xl mx-auto py-12 space-y-6 px-4">
+
+  <!-- ================= AI RESUME BUILDER HEADER ================= -->
+  <div class="glass rounded-2xl shadow-lg p-6 flex items-center justify-between">
+    <div>
+      <h1 class="text-3xl font-bold text-indigo-700">
+        🤖 AI Resume Builder
+      </h1>
+      <p class="text-gray-600 mt-1">
+        Build your professional resume with AI assistance
+      </p>
+    </div>
+
+    <button
+      onclick="openModal('summary'); setTimeout(()=>aiButton.click(), 300)"
+      class="btn-ai px-5 py-3 rounded-xl shadow hover:scale-105 transition">
+      ✨ Build with AI
+    </button>
+  </div>
+
+  <!-- ================= BASIC DETAILS ================= -->
+  <div class="glass rounded-xl shadow p-6">
+    <div class="flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">
+          {{ resume.full_name|default:"Your Name" }}
+        </h1>
+        <p class="text-gray-600">
+          {{ resume.email|default:"email@example.com" }}
+        </p>
+        <p class="text-gray-600">
+          {{ resume.phone|default:"Phone Number" }}
         </p>
       </div>
+      <div class="flex items-center gap-3">
+        <button id="editBasicBtn" class="text-indigo-700 text-lg bg-white/50 px-3 py-1 rounded hover:scale-105 transition">✏️ Edit</button>
+      </div>
+    </div>
+  </div>
 
-      <div class="bg-black/40 p-4 rounded-xl text-sm">
-        ✔ LinkedIn-style editing<br>
-        ✔ AI suggestions<br>
-        ✔ Mobile & desktop friendly
+  <!-- ================= EDUCATION ================= -->
+  <div class="glass rounded-xl shadow p-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">Education</h2>
+      <button id="addEducationBtn" class="text-indigo-700 text-xl bg-white/50 px-3 py-1 rounded">➕ Add</button>
+    </div>
+    <div id="educationList" class="mt-4 space-y-3 text-gray-700">
+      {% if resume.education %}
+        {% for line in resume.education.splitlines %}
+          <div class="education-item inline-block bg-white/40 px-3 py-2 rounded shadow-sm">
+            {{ line }}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="mt-2 text-gray-500">Add your education entries</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ================= EXPERIENCE ================= -->
+  <div class="glass rounded-xl shadow p-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">Experience</h2>
+      <button id="editExperienceBtn" class="text-indigo-700 text-xl bg-white/50 px-3 py-1 rounded">➕ Add / Edit</button>
+    </div>
+    <div id="experiencePreview" class="mt-4 whitespace-pre-line text-gray-700">
+      {{ resume.experience|default:"Add your experience" }}
+    </div>
+  </div>
+
+  <!-- ================= SKILLS ================= -->
+  <div class="glass rounded-xl shadow p-6">
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold text-gray-800">Skills</h2>
+      <div>
+        <button id="addSkillsBtn" class="text-indigo-700 text-xl bg-white/50 px-3 py-1 rounded mr-2">➕ Add</button>
+        <button id="aiSkillsBtn" class="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded">AI Suggest</button>
       </div>
     </div>
 
-    <!-- RIGHT FORM -->
-    <div class="p-6 sm:p-10 max-h-[90vh] overflow-y-auto">
-
-      <h3 class="text-2xl font-bold mb-6 text-gray-800">
-        Create Your Resume
-      </h3>
-
-      <form method="POST" class="space-y-7">
-        {% csrf_token %}
-
-        <!-- BASIC INFO -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <input name="full_name" required placeholder="Full Name"
-            class="w-full p-3 border rounded-lg">
-
-          <input name="email" type="email" required placeholder="Email"
-            class="w-full p-3 border rounded-lg">
-
-          <input name="phone" placeholder="Phone"
-            class="w-full p-3 border rounded-lg">
-        </div>
-
-        <!-- SUMMARY -->
-        <div>
-          <div class="flex justify-between items-center mb-1">
-            <label class="font-semibold text-gray-700">Professional Summary</label>
-            <button type="button"
-              onclick="aiImprove('summary')"
-              class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
-              ✨ AI Generate
-            </button>
-          </div>
-
-          <textarea id="summary" name="summary" rows="4"
-            class="w-full p-3 border rounded-lg"
-            placeholder="Write or leave empty for AI"></textarea>
-
-          <textarea id="summary_ai"
-            class="hidden w-full mt-3 p-3 border rounded-lg bg-gray-50"></textarea>
-        </div>
-
-        <!-- SKILLS -->
-        <div>
-          <div class="flex justify-between items-center mb-1">
-            <label class="font-semibold text-gray-700">Skills</label>
-            <button type="button"
-              onclick="aiImprove('skills')"
-              class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
-              ✨ AI Suggest
-            </button>
-          </div>
-
-          <textarea id="skills" name="skills" rows="3"
-            class="w-full p-3 border rounded-lg"
-            placeholder="Python, Django, SQL..."></textarea>
-
-          <textarea id="skills_ai"
-            class="hidden w-full mt-3 p-3 border rounded-lg bg-gray-50"></textarea>
-        </div>
-
-        <!-- EXPERIENCE -->
-        <div>
-          <div class="flex justify-between items-center mb-1">
-            <label class="font-semibold text-gray-700">Experience</label>
-            <button type="button"
-              onclick="aiImprove('experience')"
-              class="text-xs px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg">
-              ✨ AI Write
-            </button>
-          </div>
-
-          <textarea id="experience" name="experience" rows="4"
-            class="w-full p-3 border rounded-lg"
-            placeholder="Describe your experience"></textarea>
-
-          <textarea id="experience_ai"
-            class="hidden w-full mt-3 p-3 border rounded-lg bg-gray-50"></textarea>
-        </div>
-
-        <!-- EDUCATION -->
-        <div>
-          <label class="font-semibold text-gray-700">Education</label>
-          <textarea name="education" rows="3"
-            class="w-full p-3 border rounded-lg"
-            placeholder="Degree, College, Year"></textarea>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="flex gap-4 pt-4">
-          <button type="submit"
-            class="px-8 py-3 bg-indigo-600 text-white rounded-lg">
-            Save Resume
-          </button>
-
-          <a href="/dashboard/"
-            class="px-8 py-3 bg-gray-200 rounded-lg text-center">
-            Cancel
-          </a>
-        </div>
-      </form>
+    <div id="skillsList" class="mt-4">
+      {% if resume.skills %}
+        <ul class="flex flex-wrap gap-2">
+          {% for skill in resume.skills.splitlines %}
+            <li class="inline-block bg-white/40 px-3 py-1 rounded">{{ skill }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="mt-4 text-gray-500">Add skills</p>
+      {% endif %}
     </div>
+  </div>
+
+  <!-- ================= FINAL SAVE BUTTON ================= -->
+  <div class="flex justify-end">
+    <button id="saveResumeBtn" class="px-6 py-3 btn-ai rounded-lg shadow hover:scale-105 transition">
+      Save Resume & Preview
+    </button>
+  </div>
+
+</div>
+
+<!-- ================= MODAL ================= -->
+<div id="modal" class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+  <div id="modalCard" class="glass w-full max-w-2xl rounded-2xl shadow-xl p-6">
+
+    <div class="flex justify-between items-center mb-4">
+      <h3 id="modalTitle" class="text-xl font-semibold"></h3>
+      <button id="modalCloseBtn" class="text-gray-600">✖</button>
+    </div>
+
+    <!-- BASIC -->
+    <div id="basicFields" class="hidden space-y-3">
+      <input id="fullNameInput" name="full_name" class="w-full border rounded-lg p-3 input"
+             value="{{ resume.full_name }}" placeholder="Full Name">
+      <input id="emailInput" name="email" class="w-full border rounded-lg p-3 input"
+             value="{{ resume.email }}" placeholder="Email">
+      <input id="phoneInput" name="phone" class="w-full border rounded-lg p-3 input"
+             value="{{ resume.phone }}" placeholder="Phone">
+    </div>
+
+    <!-- DYNAMIC LIST (Skills / Education) -->
+    <div id="listEditor" class="hidden space-y-3">
+      <div id="listInputs" class="space-y-2"></div>
+      <div class="flex gap-2">
+        <button id="addAnotherBtn" class="px-3 py-2 bg-green-100 text-green-700 rounded">+ Add another</button>
+        <button id="removeEmptyBtn" class="px-3 py-2 bg-red-100 text-red-700 rounded">Remove empty</button>
+      </div>
+      <p class="text-sm text-gray-500">Use each input for one entry. When saved, items will appear as separate lines.</p>
+    </div>
+
+    <!-- TEXT (experience / summary / single textarea fields) -->
+    <textarea id="modalInput"
+              class="w-full border rounded-lg p-3"
+              rows="6"></textarea>
+
+    <!-- AI suggestion area (readonly) -->
+    <textarea id="modalAI"
+              class="hidden w-full mt-3 border rounded-lg p-3 bg-gray-50" readonly></textarea>
+
+    <div class="flex justify-between items-center mt-4">
+      <button id="aiButton" class="text-sm bg-indigo-100 text-indigo-700 px-4 py-2 rounded">
+        ✨ AI Suggest
+      </button>
+
+      <div class="flex gap-2">
+        <button id="modalCancelBtn" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+        <button id="modalSaveBtn" class="px-4 py-2 btn-ai rounded">
+          Save
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
-<!-- ===================== -->
-<!-- ✅ AI JAVASCRIPT -->
-<!-- ===================== -->
+<!-- Hidden form for "Save All" that posts to edit_resume view and triggers preview redirect -->
+<form id="saveAllForm" action="{% url 'resumes:edit_resume' resume.id %}" method="POST" class="hidden">
+  {% csrf_token %}
+  <input type="hidden" name="full_name" id="save_full_name">
+  <input type="hidden" name="email" id="save_email">
+  <input type="hidden" name="phone" id="save_phone">
+  <input type="hidden" name="summary" id="save_summary">
+  <textarea name="skills" id="save_skills" class="hidden"></textarea>
+  <textarea name="experience" id="save_experience" class="hidden"></textarea>
+  <textarea name="education" id="save_education" class="hidden"></textarea>
+</form>
+
+<!-- ================= JS ================= -->
 <script>
-function aiImprove(field) {
-    improveText(field, field + "_ai");
+/* ===== Globals (populated on DOMContentLoaded) ===== */
+let activeField = null;
+let currentSkills = [];
+let currentEducation = [];
+
+let modal, modalTitle, modalCloseBtn, modalCancelBtn, modalSaveBtn, modalCard;
+let basicFields, listEditor, listInputs, modalInput, modalAI, aiButton, addAnotherBtn, removeEmptyBtn;
+let editBasicBtn, addEducationBtn, editExperienceBtn, addSkillsBtn, aiSkillsBtn, saveResumeBtn;
+let experiencePreview, skillsList, educationList;
+let saveAllForm, save_full_name, save_email, save_phone, save_summary, save_skills, save_experience, save_education;
+
+document.addEventListener('DOMContentLoaded', () => {
+  // assign elements
+  modal = document.getElementById('modal');
+  modalTitle = document.getElementById('modalTitle');
+  modalCloseBtn = document.getElementById('modalCloseBtn');
+  modalCancelBtn = document.getElementById('modalCancelBtn');
+  modalSaveBtn = document.getElementById('modalSaveBtn');
+  modalCard = document.getElementById('modalCard');
+
+  basicFields = document.getElementById('basicFields');
+  listEditor = document.getElementById('listEditor');
+  listInputs = document.getElementById('listInputs');
+  modalInput = document.getElementById('modalInput');
+  modalAI = document.getElementById('modalAI');
+  aiButton = document.getElementById('aiButton');
+  addAnotherBtn = document.getElementById('addAnotherBtn');
+  removeEmptyBtn = document.getElementById('removeEmptyBtn');
+
+  editBasicBtn = document.getElementById('editBasicBtn');
+  addEducationBtn = document.getElementById('addEducationBtn');
+  editExperienceBtn = document.getElementById('editExperienceBtn');
+  addSkillsBtn = document.getElementById('addSkillsBtn');
+  aiSkillsBtn = document.getElementById('aiSkillsBtn');
+  saveResumeBtn = document.getElementById('saveResumeBtn');
+
+  experiencePreview = document.getElementById('experiencePreview');
+  skillsList = document.getElementById('skillsList');
+  educationList = document.getElementById('educationList');
+
+  saveAllForm = document.getElementById('saveAllForm');
+  save_full_name = document.getElementById('save_full_name');
+  save_email = document.getElementById('save_email');
+  save_phone = document.getElementById('save_phone');
+  save_summary = document.getElementById('save_summary');
+  save_skills = document.getElementById('save_skills');
+  save_experience = document.getElementById('save_experience');
+  save_education = document.getElementById('save_education');
+
+  // init arrays from current rendered DOM
+  if (skillsList) {
+    currentSkills = Array.from(skillsList.querySelectorAll('li, div'))
+      .map(el => el.innerText.trim())
+      .filter(Boolean);
+  }
+
+  if (educationList) {
+    // skip the 'Add your education entries' p element
+    currentEducation = Array.from(educationList.children)
+      .map(el => el.innerText.trim())
+      .filter(Boolean);
+  }
+
+  // wire buttons
+  if (editBasicBtn) editBasicBtn.addEventListener('click', () => openModal('basic'));
+  if (addEducationBtn) addEducationBtn.addEventListener('click', () => { openModal('education'); });
+  if (editExperienceBtn) {
+    editExperienceBtn.addEventListener('click', () => {
+      openModal('experience');
+      setTimeout(() => aiButton.click(), 300); // auto-open AI for experience edits
+    });
+  }
+  if (addSkillsBtn) addSkillsBtn.addEventListener('click', () => openModal('skills'));
+  if (aiSkillsBtn) aiSkillsBtn.addEventListener('click', () => { openModal('skills'); aiButton.click(); });
+  if (saveResumeBtn) saveResumeBtn.addEventListener('click', saveAll);
+
+  if (modalCloseBtn) modalCloseBtn.addEventListener('click', closeModal);
+  if (modalCancelBtn) modalCancelBtn.addEventListener('click', closeModal);
+  if (modalSaveBtn) modalSaveBtn.addEventListener('click', saveField);
+  if (aiButton) aiButton.addEventListener('click', aiSuggest);
+  if (addAnotherBtn) addAnotherBtn.addEventListener('click', () => addListInput(''));
+  if (removeEmptyBtn) removeEmptyBtn.addEventListener('click', removeEmptyListInputs);
+
+  // render initial preview (in case arrays were updated)
+  renderSkills();
+  renderEducation();
+});
+
+/* ===== Utility ===== */
+function escapeHtml(text) {
+  return String(text || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
-async function improveText(sourceId, targetId) {
-    const sourceEl = document.getElementById(sourceId);
-    const targetEl = document.getElementById(targetId);
+/* ===== Open / Close modal ===== */
+function openModal(field) {
+  activeField = field;
+  modal.classList.remove('hidden');
 
-    const text = sourceEl.value.trim();
-    if (!text) {
-        alert("Please enter some text first.");
-        return;
+  // show/hide sections
+  basicFields.classList.toggle('hidden', field !== 'basic');
+  listEditor.classList.add('hidden'); // hide by default
+  modalInput.classList.toggle('hidden', (field === 'basic') || (field === 'skills') || (field === 'education'));
+  modalAI.classList.add('hidden');
+  aiButton.disabled = false;
+
+  modalTitle.innerText = field === 'basic' ? 'Edit Basic Details' : 'Edit ' + field.charAt(0).toUpperCase() + field.slice(1);
+
+  // populate content
+  if (field === 'basic') {
+    // inputs already have server values from template
+  } else if (field === 'skills' || field === 'education') {
+    listEditor.classList.remove('hidden');
+    modalInput.classList.add('hidden');
+    populateListEditor(field);
+  } else {
+    // experience or summary
+    modalInput.classList.remove('hidden');
+    const mapping = {
+      experience: (experiencePreview ? experiencePreview.innerText.trim() : ''),
+      summary: "{{ resume.summary|default:''|escapejs }}"
+    };
+    modalInput.value = mapping[field] || "";
+  }
+}
+
+function closeModal() {
+  modal.classList.add('hidden');
+  // clear list editor inputs
+  if (listInputs) listInputs.innerHTML = "";
+  if (modalAI) modalAI.classList.add('hidden');
+}
+
+/* ===== List editor helpers ===== */
+function populateListEditor(field){
+  if (!listInputs) return;
+  listInputs.innerHTML = "";
+  const values = (field === 'skills') ? currentSkills.slice() : currentEducation.slice();
+  if(values.length === 0){
+    addListInput("");
+  } else {
+    values.forEach(v => addListInput(v));
+  }
+}
+
+function addListInput(value = "") {
+  if (!listInputs) return;
+
+  const row = document.createElement('div');
+  row.className = "flex gap-2 items-center";
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'w-full border rounded-lg p-2 input';
+  input.value = value || '';
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'px-3 py-1 rounded bg-red-50 text-red-700';
+  removeBtn.innerText = 'Remove';
+  removeBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    row.remove();
+  });
+
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  listInputs.appendChild(row);
+}
+
+function removeEmptyListInputs(){
+  if (!listInputs) return;
+  const inputs = Array.from(listInputs.querySelectorAll('input'));
+  inputs.forEach(i => { if(!i.value.trim()) i.closest('div')?.remove(); });
+}
+
+/* ===== AI suggest ===== */
+async function aiSuggest() {
+  if (activeField === 'basic') return;
+
+  let text;
+  if (activeField === 'skills' || activeField === 'education') {
+    text = Array.from(document.querySelectorAll('#listInputs input')).map(i => i.value).join("\n");
+  } else {
+    text = modalInput.value;
+  }
+
+  if (modalAI) {
+    modalAI.classList.remove('hidden');
+    modalAI.value = '⏳ Generating...';
+  }
+
+  try {
+    const res = await fetch('/ai/improve/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify({ text, field: activeField })
+    });
+    const data = await res.json();
+    const suggestion = data.result || '';
+    if (activeField === 'skills' || activeField === 'education') {
+      // populate inputs with suggested lines
+      if (listInputs) listInputs.innerHTML = '';
+      suggestion.split(/\r?\n/).map(l => l.trim()).filter(Boolean).forEach(l => addListInput(l));
+      if (modalAI) modalAI.value = 'AI suggestions applied.';
+    } else {
+      if (modalAI) modalAI.value = suggestion;
+      if (modalInput) modalInput.value = suggestion;
     }
+  } catch (err) {
+    if (modalAI) modalAI.value = 'AI error';
+    console.error('AI error', err);
+  }
+}
 
-    targetEl.classList.remove("hidden");
-    targetEl.value = "⏳ Improving with AI...";
+/* ===== Save field (AJAX) ===== */
+async function saveField() {
+  let payload = {};
+
+  if (activeField === 'basic') {
+    payload = {
+      full_name: document.getElementById('fullNameInput').value,
+      email: document.getElementById('emailInput').value,
+      phone: document.getElementById('phoneInput').value
+    };
+  } else if (activeField === 'skills' || activeField === 'education') {
+    // collect inputs
+    const inputs = Array.from(document.querySelectorAll('#listInputs input')).map(i => i.value.trim()).filter(Boolean);
+    const content = inputs.join("\n");
+    if (activeField === 'skills') {
+      currentSkills = inputs;
+      renderSkills(true);
+    } else {
+      currentEducation = inputs;
+      renderEducation(true);
+    }
+    payload = { field: activeField, content };
+  } else {
+    payload = {
+      field: activeField,
+      content: (modalAI && modalAI.value) ? modalAI.value : modalInput.value
+    };
+    if (activeField === 'experience' && experiencePreview) {
+      experiencePreview.innerText = payload.content;
+      // highlight experience briefly
+      experiencePreview.classList.add('highlight-new');
+      setTimeout(()=> experiencePreview.classList.remove('highlight-new'), 1800);
+    }
+  }
+
+  const url = "{% url 'resumes:save_resume_field' resume.id %}";
+
+  if (activeField === 'basic') {
+    // For basic, POST to edit_resume to update all fields together
+    const formData = new FormData();
+    formData.append('full_name', payload.full_name);
+    formData.append('email', payload.email);
+    formData.append('phone', payload.phone);
+    formData.append('summary', "{{ resume.summary|default:''|escapejs }}");
+    formData.append('skills', currentSkills.join("\n"));
+    formData.append('experience', experiencePreview ? experiencePreview.innerText.trim() : '');
+    formData.append('education', currentEducation.join("\n"));
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
     try {
-        const response = await fetch("/ai/improve/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": "{{ csrf_token }}"
-            },
-            body: JSON.stringify({ text })
-        });
-
-        const data = await response.json();
-        console.log("AI RESPONSE:", data);
-
-        if (!response.ok) {
-            targetEl.value = "";
-            alert(data.error || "AI error");
-            return;
-        }
-
-        if (data.result) {
-            targetEl.value = data.result;
-        } else {
-            targetEl.value = "";
-            alert("AI returned empty result");
-        }
-
+      await fetch("{% url 'resumes:edit_resume' resume.id %}", {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin'
+      });
     } catch (err) {
-        targetEl.value = "";
-        alert("Network error");
-        console.error(err);
+      console.error('Save basic error', err);
     }
+
+    // reload to reflect server state
+    location.reload();
+    return;
+  }
+
+  // Non-basic: use save_resume_field endpoint
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    console.error('Save field error', err);
+  }
+
+  closeModal();
+}
+
+/* ===== Render preview helpers ===== */
+function renderSkills(highlight=false){
+  if (!skillsList) return;
+  skillsList.innerHTML = '';
+
+  if (!currentSkills || currentSkills.length === 0) {
+    skillsList.innerHTML = '<p class="mt-4 text-gray-500">Add skills</p>';
+    return;
+  }
+  const ul = document.createElement('ul');
+  ul.className = 'flex flex-wrap gap-2';
+  currentSkills.forEach((s, i) => {
+    const li = document.createElement('li');
+    li.className = 'inline-block bg-white/40 px-3 py-1 rounded';
+    li.innerText = s;
+    if (highlight) {
+      li.classList.add('highlight-new');
+      setTimeout(()=> li.classList.remove('highlight-new'), 1800);
+    }
+    ul.appendChild(li);
+  });
+  skillsList.appendChild(ul);
+}
+
+function renderEducation(highlight=false){
+  if (!educationList) return;
+  educationList.innerHTML = '';
+
+  if (!currentEducation || currentEducation.length === 0) {
+    educationList.innerHTML = '<p class="mt-2 text-gray-500">Add your education entries</p>';
+    return;
+  }
+  currentEducation.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'education-item inline-block px-3 py-2 rounded shadow-sm';
+    div.innerText = e;
+    if (highlight) {
+      div.classList.add('highlight-new');
+      setTimeout(()=> div.classList.remove('highlight-new'), 1800);
+    }
+    educationList.appendChild(div);
+  });
+}
+
+/* ===== Save All: post form to edit_resume which redirects to preview ===== */
+function saveAll(){
+  // populate hidden form inputs
+  save_full_name.value = document.getElementById('fullNameInput')?.value || "{{ resume.full_name|default:''|escapejs }}";
+  save_email.value = document.getElementById('emailInput')?.value || "{{ resume.email|default:''|escapejs }}";
+  save_phone.value = document.getElementById('phoneInput')?.value || "{{ resume.phone|default:''|escapejs }}";
+
+  save_summary.value = "{{ resume.summary|default:''|escapejs }}";
+  save_skills.value = currentSkills.join("\n");
+  save_experience.value = experiencePreview ? experiencePreview.innerText.trim() : '';
+  save_education.value = currentEducation.join("\n");
+
+  // submit the hidden form (server will redirect to resume_preview)
+  saveAllForm.submit();
 }
 </script>
+
 
 {% endblock %}

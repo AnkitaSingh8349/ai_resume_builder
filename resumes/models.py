@@ -31,8 +31,6 @@ class Resume(models.Model):
         ("modern", "Modern Resume"),
         ("professional", "Professional Resume"),
         ("simple", "Simple Resume"),
-
-        # PREMIUM
         ("creative", "Creative Resume"),
         ("executive", "Executive Resume"),
         ("minimalist", "Minimalist Resume"),
@@ -46,7 +44,7 @@ class Resume(models.Model):
 
     full_name = models.CharField(max_length=100)
     email = models.EmailField()
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, blank=True)
 
     summary = RichTextField(blank=True)
     skills = RichTextField(blank=True)
@@ -55,12 +53,7 @@ class Resume(models.Model):
 
     work_link = models.URLField(blank=True, null=True)
 
-    template = models.CharField(
-        max_length=50,
-        choices=TEMPLATE_CHOICES,
-        default="modern"
-    )
-
+    template = models.CharField(max_length=50, default="modern")
     color = models.CharField(max_length=20, default="#2563eb")
 
     created_at = models.DateTimeField(auto_now_add=True)

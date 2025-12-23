@@ -1,5 +1,5 @@
 import json
-from io import BytesIO
+import re
 
 from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
@@ -7,16 +7,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
+from django.template.loader import render_to_string
 
-from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
+from playwright.sync_api import sync_playwright
 
 from .models import Resume
 from .forms import ResumeForm
+from django.template import TemplateDoesNotExist
 
 
 # ===============================
-# STRIPE SAFE LOADER (FIX)
+# STRIPE SAFE LOADER
 # ===============================
 def get_stripe():
     if not settings.STRIPE_SECRET_KEY:
@@ -85,24 +86,23 @@ def payment_success(request):
 # ==================================================
 @login_required
 def create_resume(request):
-    if request.method == "POST":
-        resume = Resume.objects.create(
-            user=request.user,
-            full_name=request.POST.get("full_name"),
-            email=request.POST.get("email"),
-            phone=request.POST.get("phone"),
-            summary=request.POST.get("summary"),
-            skills=request.POST.get("skills"),
-            experience=request.POST.get("experience"),
-            education=request.POST.get("education"),
-            template="modern",
-            color="#2563eb",
-        )
+    resume, created = Resume.objects.get_or_create(
+        user=request.user,
+        defaults={
+            "full_name": request.user.get_full_name() or "",
+            "email": request.user.email or "",
+            "phone": "",
+            "skills": "",
+            "education": "",
+            "experience": "",
+            "template": "modern",
+            "color": "#2563eb",
+        }
+    )
 
-        messages.success(request, "Resume created successfully!")
-        return redirect("resumes:resume_preview", id=resume.id)
-
-    return render(request, "resumes/create.html")
+    return render(request, "resumes/create.html", {
+        "resume": resume
+    })
 
 
 # ==================================================
@@ -178,98 +178,63 @@ def resume_preview(request, id):
 
 
 # ==================================================
-# DOWNLOAD PDF
+# DOWNLOAD PDF (PLAYWRIGHT ONLY)
 # ==================================================
 @login_required
 def download_resume(request, id):
     resume = get_object_or_404(Resume, id=id, user=request.user)
-    active = request.GET.get("template", resume.template or "modern")
 
-    if active in PREMIUM_TEMPLATES:
+    FREE_TEMPLATES = ["modern", "simple", "professional"]
+    PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
+
+    template = request.GET.get("template") or resume.template or "simple"
+    template = template.strip().lower()
+
+    # ===============================
+    # 🔒 PREMIUM CHECK
+    # ===============================
+    if template in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
+            # Save pending download info
             request.session["pending_resume_id"] = resume.id
-            request.session["pending_template"] = active
-            messages.warning(
-                request,
-                "This is a premium template. Please complete payment to download."
-            )
-            return redirect("resumes:checkout")
+            request.session["pending_template"] = template
 
-    buffer = BytesIO()
-    p = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
+            # Redirect to Stripe Checkout
+            return redirect(reverse("resumes:checkout"))
 
-    y = height - 50
+        # Payment used once → reset
+        request.session.pop("paid_for_download", None)
 
-    p.setFont("Helvetica-Bold", 18)
-    p.drawString(50, y, resume.full_name or "")
-    y -= 30
+    # ===============================
+    # PDF GENERATION
+    # ===============================
+    try:
+        html = render_to_string(
+            f"{template}.html",
+            {
+                "resume": resume,
+                "is_public": True,
+                "STATIC_URL": request.build_absolute_uri(settings.STATIC_URL),
+            }
+        )
+    except TemplateDoesNotExist:
+        return HttpResponse(
+            f"Resume template '{template}' not found.",
+            status=404
+        )
 
-    p.setFont("Helvetica", 12)
-    p.drawString(50, y, f"Email: {resume.email or ''}")
-    y -= 20
-    p.drawString(50, y, f"Phone: {resume.phone or ''}")
-    y -= 30
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.set_content(html, wait_until="networkidle")
+        pdf = page.pdf(format="A4", print_background=True)
+        browser.close()
 
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, y, "Summary")
-    y -= 20
-
-    text = p.beginText(50, y)
-    text.setFont("Helvetica", 11)
-    for line in (resume.summary or "").split("\n"):
-        text.textLine(line)
-    p.drawText(text)
-    y -= 40
-
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, y, "Skills")
-    y -= 20
-
-    text = p.beginText(50, y)
-    text.setFont("Helvetica", 11)
-    for line in (resume.skills or "").split("\n"):
-        text.textLine(line)
-    p.drawText(text)
-    y -= 40
-
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, y, "Experience")
-    y -= 20
-
-    text = p.beginText(50, y)
-    text.setFont("Helvetica", 11)
-    for line in (resume.experience or "").split("\n"):
-        text.textLine(line)
-    p.drawText(text)
-    y -= 40
-
-    p.setFont("Helvetica-Bold", 14)
-    p.drawString(50, y, "Education")
-    y -= 20
-
-    text = p.beginText(50, y)
-    text.setFont("Helvetica", 11)
-    for line in (resume.education or "").split("\n"):
-        text.textLine(line)
-    p.drawText(text)
-
-    p.showPage()
-    p.save()
-
-    buffer.seek(0)
-
-    request.session.pop("paid_for_download", None)
-    request.session.pop("pending_resume_id", None)
-    request.session.pop("pending_template", None)
-
-    return HttpResponse(
-        buffer,
-        content_type="application/pdf",
-        headers={
-            "Content-Disposition": f'attachment; filename="{resume.full_name or "resume"}.pdf"'
-        }
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'attachment; filename="{resume.full_name or "resume"}.pdf"'
     )
+    return response
 
 
 # ==================================================
@@ -282,15 +247,18 @@ def save_resume_field(request, id):
 
     resume = get_object_or_404(Resume, id=id, user=request.user)
 
-    data = json.loads(request.body)
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
     field = data.get("field")
-    content = data.get("content")
+    content = data.get("content", "")
 
     allowed_fields = [
-        "summary",
         "skills",
-        "experience",
         "education",
+        "experience",
         "full_name",
         "email",
         "phone",
