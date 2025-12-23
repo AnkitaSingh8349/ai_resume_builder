@@ -179,6 +179,7 @@ def download_resume(request, id):
     resume = get_object_or_404(Resume, id=id, user=request.user)
     active = request.GET.get("template", resume.template or "modern")
 
+    # 🔐 Premium template payment check
     if active in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
             request.session["pending_resume_id"] = resume.id
@@ -195,48 +196,71 @@ def download_resume(request, id):
 
     y = height - 50
 
+    # ================= HEADER =================
     p.setFont("Helvetica-Bold", 18)
-    p.drawString(50, y, resume.full_name)
+    p.drawString(50, y, resume.full_name or "")
     y -= 30
 
     p.setFont("Helvetica", 12)
-    p.drawString(50, y, f"Email: {resume.email}")
+    p.drawString(50, y, f"Email: {resume.email or ''}")
     y -= 20
-    p.drawString(50, y, f"Phone: {resume.phone}")
+    p.drawString(50, y, f"Phone: {resume.phone or ''}")
     y -= 30
 
+    # ================= SUMMARY =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Summary")
     y -= 20
-    p.setFont("Helvetica", 11)
-    p.textLine(resume.summary or "")
-    y -= 30
 
+    text = p.beginText(50, y)
+    text.setFont("Helvetica", 11)
+    for line in (resume.summary or "").split("\n"):
+        text.textLine(line)
+    p.drawText(text)
+    y -= 40
+
+    # ================= SKILLS =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Skills")
     y -= 20
-    p.setFont("Helvetica", 11)
-    p.textLine(resume.skills or "")
-    y -= 30
 
+    text = p.beginText(50, y)
+    text.setFont("Helvetica", 11)
+    for line in (resume.skills or "").split("\n"):
+        text.textLine(line)
+    p.drawText(text)
+    y -= 40
+
+    # ================= EXPERIENCE =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Experience")
     y -= 20
-    p.setFont("Helvetica", 11)
-    p.textLine(resume.experience or "")
-    y -= 30
 
+    text = p.beginText(50, y)
+    text.setFont("Helvetica", 11)
+    for line in (resume.experience or "").split("\n"):
+        text.textLine(line)
+    p.drawText(text)
+    y -= 40
+
+    # ================= EDUCATION =================
     p.setFont("Helvetica-Bold", 14)
     p.drawString(50, y, "Education")
     y -= 20
-    p.setFont("Helvetica", 11)
-    p.textLine(resume.education or "")
 
+    text = p.beginText(50, y)
+    text.setFont("Helvetica", 11)
+    for line in (resume.education or "").split("\n"):
+        text.textLine(line)
+    p.drawText(text)
+
+    # ================= FINALIZE PDF =================
     p.showPage()
     p.save()
 
     buffer.seek(0)
 
+    # 🧹 Clear payment session flags
     request.session.pop("paid_for_download", None)
     request.session.pop("pending_resume_id", None)
     request.session.pop("pending_template", None)
@@ -245,7 +269,7 @@ def download_resume(request, id):
         buffer,
         content_type="application/pdf",
         headers={
-            "Content-Disposition": f'attachment; filename="{resume.full_name}.pdf"'
+            "Content-Disposition": f'attachment; filename="{resume.full_name or "resume"}.pdf"'
         }
     )
 
