@@ -71,9 +71,9 @@ def register_view(request):
         form = SignupForm(request.POST)
 
         if form.is_valid():
-            email = form.cleaned_data.get("email")
+            email = form.cleaned_data["email"]
 
-            # -------- VALIDATION --------
+            # -------- EMAIL UNIQUE CHECK --------
             if User.objects.filter(email=email).exists():
                 form.add_error("email", "Email already exists")
                 return render(
@@ -82,10 +82,17 @@ def register_view(request):
                     {"form": form},
                 )
 
+            # -------- CREATE USER --------
             user = form.save(commit=False)
+
+            # 🔴 IMPORTANT FIX
+            user.username = email   # username must be unique
+            user.email = email
+
             user.set_password(form.cleaned_data["password1"])
             user.save()
 
+            # -------- LOGIN --------
             login(request, user)
             return redirect("dashboard")
 
@@ -99,7 +106,12 @@ def register_view(request):
     else:
         form = SignupForm()
 
-    return render(request, "accounts/register.html", {"form": form})
+    return render(
+        request,
+        "accounts/register.html",
+        {"form": form},
+    )
+
 
 
 # ===============================
