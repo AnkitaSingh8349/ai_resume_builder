@@ -182,7 +182,7 @@ def edit_resume(request, id):
 # SAVE TEMPLATE (AJAX)
 # ==================================================
 @login_required
-def save_template(request, id):
+def save_resume_field(request, id):
     if request.method == "POST":
         resume = get_object_or_404(Resume, id=id, user=request.user)
         data = json.loads(request.body)
@@ -192,7 +192,6 @@ def save_template(request, id):
         resume.save()
 
         return JsonResponse({"status": "ok"})
-
 
 # ==================================================
 # PREVIEW RESUME
