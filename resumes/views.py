@@ -236,21 +236,46 @@ def download_resume(request, id):
     FREE_TEMPLATES = ["modern", "simple", "professional"]
     PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
 
-    template = request.GET.get("template") or resume.template or "simple"
+    # -------------------------------
+    # 1️⃣ Resolve template safely
+    # -------------------------------
+    template = request.GET.get("template")
+
+    # If URL has no ?template=
+    if not template:
+        if resume.template in FREE_TEMPLATES:
+            template = resume.template
+        else:
+            template = "simple"
+
     template = template.strip().lower()
 
+    # Fallback safety
+    if template not in FREE_TEMPLATES + PREMIUM_TEMPLATES:
+        template = "simple"
+
+    # -------------------------------
+    # 2️⃣ Premium → payment redirect
+    # -------------------------------
     if template in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
             request.session["pending_resume_id"] = resume.id
             request.session["pending_template"] = template
             return redirect(reverse("resumes:checkout"))
 
+        # Payment done → allow download
         request.session.pop("paid_for_download", None)
 
+    # -------------------------------
+    # 3️⃣ Build public resume URL
+    # -------------------------------
     url = request.build_absolute_uri(
         reverse("resumes:resume_public", args=[resume.id])
     ) + f"?template={template}"
 
+    # -------------------------------
+    # 4️⃣ Generate PDF using Playwright
+    # -------------------------------
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
@@ -261,9 +286,9 @@ def download_resume(request, id):
                 "--disable-gpu",
             ],
         )
-        page = browser.new_page()
 
-        page.goto(url, wait_until="networkidle")
+        page = browser.new_page()
+        page.goto(url, wait_until="load", timeout=60000)
 
         pdf = page.pdf(
             format="A4",
@@ -272,10 +297,14 @@ def download_resume(request, id):
 
         browser.close()
 
+    # -------------------------------
+    # 5️⃣ Return PDF response
+    # -------------------------------
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = (
         f'attachment; filename="{resume.full_name or "resume"}.pdf"'
     )
+
     return response
 
 
