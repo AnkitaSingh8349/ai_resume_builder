@@ -19,52 +19,28 @@
 
 <body class="bg-gray-100">
 
-<div class="max-w-4xl mx-auto bg-white p-8 my-10 rounded-lg shadow relative">
-
-  <!-- ================= CONTROLS ================= -->
-  <div class="flex justify-end gap-4 mb-6 text-sm">
-    <!-- Color Picker -->
-    <input type="color" id="colorPicker" value="{{ resume.color|default:'#2563eb' }}"
-           class="w-8 h-8 cursor-pointer">
-
-    <!-- Download -->
-    <button onclick="downloadResume()"
-            class="px-4 py-2 rounded text-white bg-blue-600 hover:bg-blue-700">
-      Download PDF
-    </button>
-  </div>
+<div class="max-w-4xl mx-auto bg-white p-10 my-10 rounded-lg shadow">
 
   <!-- ================= HEADER ================= -->
-  <div class="flex items-center gap-6 mb-8">
+  <header class="border-b pb-6 mb-8">
 
-    <!-- PHOTO UPLOAD -->
-    <div class="relative cursor-pointer">
-      <img id="profileImage"
-           src="{% if resume.photo %}{{ resume.photo.url }}{% else %}{% static 'img/user.png' %}{% endif %}"
-           class="w-28 h-28 rounded-full object-cover border-4 theme-border">
+    <h1 class="text-3xl font-bold theme-color tracking-wide">
+      {{ resume.full_name }}
+    </h1>
 
-      <input type="file" accept="image/*"
-             class="absolute inset-0 opacity-0 cursor-pointer"
-             onchange="previewImage(event)">
-    </div>
+    <p class="text-sm text-gray-600 mt-2">
+      {{ resume.email }} • {{ resume.phone }}
+    </p>
 
-    <!-- NAME -->
-    <div>
-      <h1 class="text-3xl font-bold theme-color">
-        {{ resume.full_name }}
-      </h1>
-      <p class="text-sm text-gray-600 mt-1">
-        {{ resume.email }} • {{ resume.phone }}
-      </p>
-    </div>
-
-  </div>
+  </header>
 
   <!-- ================= SUMMARY ================= -->
   {% if resume.summary %}
   <section class="mb-6">
-    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Summary</h2>
-    <div class="text-sm leading-relaxed">
+    <h2 class="font-semibold text-lg theme-color mb-2">
+      Professional Summary
+    </h2>
+    <div class="text-sm leading-relaxed text-gray-800">
       {{ resume.summary|safe }}
     </div>
   </section>
@@ -73,8 +49,10 @@
   <!-- ================= SKILLS ================= -->
   {% if resume.skills %}
   <section class="mb-6">
-    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Skills</h2>
-    <div class="text-sm leading-relaxed">
+    <h2 class="font-semibold text-lg theme-color mb-2">
+      Skills
+    </h2>
+    <div class="text-sm leading-relaxed text-gray-800">
       {{ resume.skills|safe }}
     </div>
   </section>
@@ -83,8 +61,10 @@
   <!-- ================= EXPERIENCE ================= -->
   {% if resume.experience %}
   <section class="mb-6">
-    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Experience</h2>
-    <div class="text-sm leading-relaxed">
+    <h2 class="font-semibold text-lg theme-color mb-2">
+      Experience
+    </h2>
+    <div class="text-sm leading-relaxed text-gray-800">
       {{ resume.experience|safe }}
     </div>
   </section>
@@ -93,58 +73,16 @@
   <!-- ================= EDUCATION ================= -->
   {% if resume.education %}
   <section>
-    <h2 class="font-semibold text-lg border-b pb-1 mb-2">Education</h2>
-    <div class="text-sm leading-relaxed">
+    <h2 class="font-semibold text-lg theme-color mb-2">
+      Education
+    </h2>
+    <div class="text-sm leading-relaxed text-gray-800">
       {{ resume.education|safe }}
     </div>
   </section>
   {% endif %}
 
 </div>
-
-<!-- ================= PAYMENT MODAL ================= -->
-<div id="payModal"
-     class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-
-  <div class="bg-white p-6 rounded shadow max-w-sm text-center">
-    <h2 class="text-xl font-semibold mb-2">Upgrade Required</h2>
-    <p class="text-sm text-gray-600 mb-4">
-      You have used all 3 free downloads.
-    </p>
-    <button class="px-4 py-2 bg-green-600 text-white rounded">
-      Pay & Download
-    </button>
-  </div>
-
-</div>
-
-<!-- ================= SCRIPT ================= -->
-<script>
-  /* Photo Preview */
-  function previewImage(event) {
-    const img = document.getElementById("profileImage");
-    img.src = URL.createObjectURL(event.target.files[0]);
-  }
-
-  /* Color Picker */
-  document.getElementById("colorPicker").addEventListener("input", function (e) {
-    document.documentElement.style.setProperty("--theme-color", e.target.value);
-  });
-
-  /* Download Limit */
-  function downloadResume() {
-    let count = localStorage.getItem("downloadCount") || 0;
-    count++;
-
-    if (count > 3) {
-      document.getElementById("payModal").classList.remove("hidden");
-      return;
-    }
-
-    localStorage.setItem("downloadCount", count);
-    alert("Resume downloaded (mock)");
-  }
-</script>
 
 </body>
 </html>

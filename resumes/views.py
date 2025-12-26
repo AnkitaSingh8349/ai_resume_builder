@@ -14,6 +14,57 @@ from playwright.sync_api import sync_playwright
 from .models import Resume
 from .forms import ResumeForm
 from django.template import TemplateDoesNotExist
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+import json
+
+@require_POST
+@login_required
+def improve(request):
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
+
+    text = (data.get("text") or "").strip()
+    field = data.get("field", "general")
+
+    # Allow empty input (skills / education start empty)
+    if not text:
+        text = "Generate professional resume content."
+
+    PROMPTS = {
+        "skills": (
+            "Generate a clean ATS-friendly list of professional resume skills. "
+            "Each skill must be on a new line."
+        ),
+        "education": (
+            "Rewrite the education section in a professional resume format. "
+            "Each entry should be on a new line."
+        ),
+        "experience": (
+            "Rewrite work experience using strong action verbs and achievements."
+        ),
+        "summary": (
+            "Write a concise professional resume summary (3–4 lines)."
+        ),
+    }
+
+    system_prompt = PROMPTS.get(
+        field,
+        "Rewrite the resume content to be professional and ATS-friendly."
+    )
+
+    try:
+        result = ai_improve_text(
+            text=text,
+            system_prompt=system_prompt
+        )
+        return JsonResponse({"result": result})
+
+    except Exception:
+        return JsonResponse({"error": "AI failed"}, status=500)
+
 
 
 # ===============================
@@ -176,9 +227,8 @@ def resume_preview(request, id):
         },
     )
 
-
 # ==================================================
-# DOWNLOAD PDF (PLAYWRIGHT ONLY)
+# DOWNLOAD PDF (PLAYWRIGHT ONLY) ✅ FIXED
 # ==================================================
 @login_required
 def download_resume(request, id):
@@ -190,44 +240,32 @@ def download_resume(request, id):
     template = request.GET.get("template") or resume.template or "simple"
     template = template.strip().lower()
 
-    # ===============================
     # 🔒 PREMIUM CHECK
-    # ===============================
     if template in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
-            # Save pending download info
             request.session["pending_resume_id"] = resume.id
             request.session["pending_template"] = template
-
-            # Redirect to Stripe Checkout
             return redirect(reverse("resumes:checkout"))
 
-        # Payment used once → reset
         request.session.pop("paid_for_download", None)
 
-    # ===============================
-    # PDF GENERATION
-    # ===============================
-    try:
-        html = render_to_string(
-            f"{template}.html",
-            {
-                "resume": resume,
-                "is_public": True,
-                "STATIC_URL": request.build_absolute_uri(settings.STATIC_URL),
-            }
-        )
-    except TemplateDoesNotExist:
-        return HttpResponse(
-            f"Resume template '{template}' not found.",
-            status=404
-        )
+    # 🔥 IMPORTANT: build public resume URL
+    url = request.build_absolute_uri(
+        reverse("resumes:resume_public", args=[resume.id])
+    ) + f"?template={template}"
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.set_content(html, wait_until="networkidle")
-        pdf = page.pdf(format="A4", print_background=True)
+
+        # 👉 THIS is the key fix
+        page.goto(url, wait_until="networkidle")
+
+        pdf = page.pdf(
+            format="A4",
+            print_background=True
+        )
+
         browser.close()
 
     response = HttpResponse(pdf, content_type="application/pdf")
@@ -329,3 +367,4 @@ def my_resumes(request):
     return render(request, "resumes/list.html", {
         "resumes": resumes
     })
+

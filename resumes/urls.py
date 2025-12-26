@@ -17,4 +17,5 @@ urlpatterns = [
     # ===============================
     path("checkout/", views.create_checkout_session, name="checkout"),
     path("payment-success/", views.payment_success, name="payment_success"),
+    
 ]
