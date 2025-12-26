@@ -10,8 +10,6 @@ from django.urls import reverse
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
-from weasyprint import HTML
-
 from .models import Resume
 from .forms import ResumeForm
 
@@ -228,14 +226,14 @@ def resume_preview(request, id):
 # ==================================================
 @login_required
 def download_resume(request, id):
+    # ✅ import INSIDE function
+    from weasyprint import HTML  
+
     resume = get_object_or_404(Resume, id=id, user=request.user)
 
     FREE_TEMPLATES = ["modern", "simple", "professional"]
     PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
 
-    # -------------------------------
-    # 1️⃣ Resolve template safely
-    # -------------------------------
     template = request.GET.get("template")
 
     if not template:
@@ -246,9 +244,6 @@ def download_resume(request, id):
     if template not in FREE_TEMPLATES + PREMIUM_TEMPLATES:
         template = "simple"
 
-    # -------------------------------
-    # 2️⃣ Premium → payment redirect
-    # -------------------------------
     if template in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
             request.session["pending_resume_id"] = resume.id
@@ -257,9 +252,6 @@ def download_resume(request, id):
 
         request.session.pop("paid_for_download", None)
 
-    # -------------------------------
-    # 3️⃣ Render HTML (NO browser)
-    # -------------------------------
     template_map = {
         "modern": "modern.html",
         "professional": "professional.html",
@@ -278,17 +270,11 @@ def download_resume(request, id):
         request=request,
     )
 
-    # -------------------------------
-    # 4️⃣ Generate PDF (WeasyPrint)
-    # -------------------------------
     pdf = HTML(
         string=html_string,
         base_url=request.build_absolute_uri("/"),
     ).write_pdf()
 
-    # -------------------------------
-    # 5️⃣ Return PDF response
-    # -------------------------------
     response = HttpResponse(pdf, content_type="application/pdf")
     response["Content-Disposition"] = (
         f'attachment; filename="{resume.full_name or "resume"}.pdf"'
