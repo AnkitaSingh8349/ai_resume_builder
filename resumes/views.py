@@ -240,7 +240,6 @@ def download_resume(request, id):
     template = request.GET.get("template") or resume.template or "simple"
     template = template.strip().lower()
 
-    # 🔒 PREMIUM CHECK
     if template in PREMIUM_TEMPLATES:
         if not request.session.get("paid_for_download"):
             request.session["pending_resume_id"] = resume.id
@@ -249,21 +248,27 @@ def download_resume(request, id):
 
         request.session.pop("paid_for_download", None)
 
-    # 🔥 IMPORTANT: build public resume URL
     url = request.build_absolute_uri(
         reverse("resumes:resume_public", args=[resume.id])
     ) + f"?template={template}"
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+            ],
+        )
         page = browser.new_page()
 
-        # 👉 THIS is the key fix
         page.goto(url, wait_until="networkidle")
 
         pdf = page.pdf(
             format="A4",
-            print_background=True
+            print_background=True,
         )
 
         browser.close()
@@ -273,42 +278,6 @@ def download_resume(request, id):
         f'attachment; filename="{resume.full_name or "resume"}.pdf"'
     )
     return response
-
-
-# ==================================================
-# SAVE RESUME FIELD (AJAX)
-# ==================================================
-@login_required
-def save_resume_field(request, id):
-    if request.method != "POST":
-        return JsonResponse({"error": "Invalid request"}, status=400)
-
-    resume = get_object_or_404(Resume, id=id, user=request.user)
-
-    try:
-        data = json.loads(request.body)
-    except Exception:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
-
-    field = data.get("field")
-    content = data.get("content", "")
-
-    allowed_fields = [
-        "skills",
-        "education",
-        "experience",
-        "full_name",
-        "email",
-        "phone",
-    ]
-
-    if field not in allowed_fields:
-        return JsonResponse({"error": "Invalid field"}, status=400)
-
-    setattr(resume, field, content)
-    resume.save(update_fields=[field])
-
-    return JsonResponse({"status": "saved"})
 
 
 # ==================================================
