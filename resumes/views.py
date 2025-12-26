@@ -317,13 +317,19 @@ def resume_public(request, id):
         "minimalist": "minimalist.html",
     }
 
+    # ✅ READ template from query string
+    template = request.GET.get("template", resume.template)
+    template = template.strip().lower()
+
+    template_file = template_map.get(template, "modern.html")
+
     return render(
         request,
-        template_map.get(resume.template, "modern.html"),
+        template_file,
         {
             "resume": resume,
-            "is_public": True
-        }
+            "is_public": True,
+        },
     )
 
 
