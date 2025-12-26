@@ -5,8 +5,6 @@
 <meta charset="UTF-8">
 <title>{{ resume.full_name }} | Modern Resume</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-
 <style>
 :root {
   --theme: {{ resume.color|default:"#2563eb" }};
@@ -23,17 +21,10 @@
   <!-- SIDEBAR -->
   <aside class="col-span-1 p-6 theme-bg text-white">
 
-    <!-- PHOTO -->
-    <div class="relative mx-auto w-28">
-      <img id="photo"
-           src="{% if resume.photo %}{{ resume.photo.url }}{% else %}{% static 'img/user.png' %}{% endif %}"
-           class="rounded-full w-28 h-28 object-cover border-4 border-white">
-
-      <!-- Image Preview Upload -->
-      <input type="file"
-             accept="image/*"
-             class="absolute inset-0 opacity-0 cursor-pointer"
-             onchange="preview(event)">
+    <!-- INITIAL AVATAR (NO IMAGE) -->
+    <div class="mx-auto w-28 h-28 rounded-full flex items-center justify-center
+                bg-white text-gray-900 text-4xl font-bold border-4 border-white">
+      {{ resume.full_name|slice:":1"|upper }}
     </div>
 
     <!-- NAME -->
@@ -85,13 +76,6 @@
   </main>
 
 </div>
-
-<script>
-function preview(e) {
-  document.getElementById("photo").src =
-    URL.createObjectURL(e.target.files[0]);
-}
-</script>
 
 </body>
 </html>

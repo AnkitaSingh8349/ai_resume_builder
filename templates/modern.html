@@ -5,8 +5,6 @@
   <meta charset="UTF-8">
   <title>Modern Resume</title>
 
-  <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
-
   <style>
     .modern-resume {
       max-width: 900px;
@@ -91,8 +89,6 @@
 
     {% if resume.photo %}
       <img class="modern-avatar" src="{{ resume.photo.url }}">
-    {% else %}
-      <img class="modern-avatar" src="{% static 'img/user.png' %}">
     {% endif %}
 
     <h1>{{ resume.full_name }}</h1>
