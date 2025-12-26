@@ -8,15 +8,13 @@ from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.template.loader import render_to_string
+from django.views.decorators.http import require_POST
 
-from playwright.sync_api import sync_playwright
+from weasyprint import HTML
 
 from .models import Resume
 from .forms import ResumeForm
-from django.template import TemplateDoesNotExist
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-import json
+
 
 @require_POST
 @login_required
@@ -225,9 +223,8 @@ def resume_preview(request, id):
             "premium_templates": PREMIUM_TEMPLATES,
         },
     )
-
 # ==================================================
-# DOWNLOAD PDF (PLAYWRIGHT ONLY) ✅ FIXED
+# DOWNLOAD PDF (WEASYPRINT – RENDER SAFE) ✅
 # ==================================================
 @login_required
 def download_resume(request, id):
@@ -241,16 +238,11 @@ def download_resume(request, id):
     # -------------------------------
     template = request.GET.get("template")
 
-    # If URL has no ?template=
     if not template:
-        if resume.template in FREE_TEMPLATES:
-            template = resume.template
-        else:
-            template = "simple"
+        template = resume.template if resume.template in FREE_TEMPLATES else "simple"
 
     template = template.strip().lower()
 
-    # Fallback safety
     if template not in FREE_TEMPLATES + PREMIUM_TEMPLATES:
         template = "simple"
 
@@ -263,39 +255,36 @@ def download_resume(request, id):
             request.session["pending_template"] = template
             return redirect(reverse("resumes:checkout"))
 
-        # Payment done → allow download
         request.session.pop("paid_for_download", None)
 
     # -------------------------------
-    # 3️⃣ Build public resume URL
+    # 3️⃣ Render HTML (NO browser)
     # -------------------------------
-    url = request.build_absolute_uri(
-        reverse("resumes:resume_public", args=[resume.id])
-    ) + f"?template={template}"
+    template_map = {
+        "modern": "modern.html",
+        "professional": "professional.html",
+        "simple": "simple.html",
+        "creative": "creative.html",
+        "executive": "executive.html",
+        "minimalist": "minimalist.html",
+    }
+
+    html_string = render_to_string(
+        template_map.get(template, "modern.html"),
+        {
+            "resume": resume,
+            "is_public": True,
+        },
+        request=request,
+    )
 
     # -------------------------------
-    # 4️⃣ Generate PDF using Playwright
+    # 4️⃣ Generate PDF (WeasyPrint)
     # -------------------------------
-    with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-            ],
-        )
-
-        page = browser.new_page()
-        page.goto(url, wait_until="load", timeout=60000)
-
-        pdf = page.pdf(
-            format="A4",
-            print_background=True,
-        )
-
-        browser.close()
+    pdf = HTML(
+        string=html_string,
+        base_url=request.build_absolute_uri("/"),
+    ).write_pdf()
 
     # -------------------------------
     # 5️⃣ Return PDF response
@@ -304,7 +293,6 @@ def download_resume(request, id):
     response["Content-Disposition"] = (
         f'attachment; filename="{resume.full_name or "resume"}.pdf"'
     )
-
     return response
 
 

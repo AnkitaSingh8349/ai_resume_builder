@@ -8,7 +8,7 @@ django-js-asset==3.1.2
 greenlet==3.3.0
 idna==3.11
 mysqlclient==2.2.7
-playwright==1.57.0
+weasyprint==62.3
 psycopg2-binary==2.9.11
 pyee==13.0.0
 python-dotenv==1.2.1
