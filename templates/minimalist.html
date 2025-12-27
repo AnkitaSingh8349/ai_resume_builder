@@ -4,14 +4,50 @@
 <head>
 <meta charset="UTF-8">
 <title>{{ resume.full_name }} | Modern Resume</title>
-
 <style>
-:root {
-  --theme: {{ resume.color|default:"#2563eb" }};
-}
-.theme { color: var(--theme); }
-.theme-bg { background: var(--theme); }
+  :root {
+    --theme: {{ resume.color|default:"#2563eb" }};
+  }
+
+  .theme { color: var(--theme); }
+  .theme-bg { background-color: var(--theme) !important; }
+
+  /* ========================= */
+  /* PRINT MODE – REQUIRED */
+  /* ========================= */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      background: white !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    button {
+      display: none !important;
+    }
+
+    .shadow,
+    .shadow-lg {
+      box-shadow: none !important;
+    }
+
+    /* Fix grid for print */
+    .grid {
+      display: grid !important;
+    }
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
 </style>
+
 </head>
 
 <body class="bg-gray-100">

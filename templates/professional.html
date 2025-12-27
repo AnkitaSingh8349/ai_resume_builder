@@ -6,75 +6,108 @@
   <title>Professional Resume</title>
 
   <style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f3f4f6;
+    color: #111827;
+  }
+
+  .resume {
+    background: white;
+    max-width: 900px;
+    margin: 40px auto;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    box-shadow: 0 10px 25px rgba(0,0,0,.08);
+  }
+
+  .left {
+    background-color: #fafafa !important;
+    padding: 30px 20px;
+    text-align: center;
+    border-right: 1px solid #e5e7eb;
+  }
+
+  .avatar {
+    width: 80px;
+    height: 80px;
+    background-color: #000 !important;
+    color: #ef4444 !important;
+    font-size: 36px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 15px;
+  }
+
+  .name {
+    font-size: 20px;
+    font-weight: bold;
+    color: #dc2626 !important;
+  }
+
+  .contact {
+    font-size: 12px;
+    color: #374151;
+    margin-top: 10px;
+    line-height: 1.5;
+  }
+
+  .right {
+    padding: 30px;
+  }
+
+  .section {
+    margin-bottom: 24px;
+    page-break-inside: avoid;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 10px;
+    padding-bottom: 4px;
+  }
+
+  .content p { margin-bottom: 8px; }
+  .content ul { list-style: disc; margin-left: 20px; }
+  .content strong { font-weight: bold; }
+
+  /* ========================= */
+  /* PRINT MODE – REQUIRED */
+  /* ========================= */
+  @media print {
     body {
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      color: #111827;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      background: white !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
     .resume {
-      background: white;
-      max-width: 900px;
-      margin: 40px auto;
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      box-shadow: 0 10px 25px rgba(0,0,0,.08);
+      width: 210mm !important;
+      margin: 0 !important;
+      box-shadow: none !important;
     }
 
-    .left {
-      background: #fafafa;
-      padding: 30px 20px;
-      text-align: center;
-      border-right: 1px solid #e5e7eb;
+    button {
+      display: none !important;
     }
+  }
 
-    .avatar {
-      width: 80px;
-      height: 80px;
-      background: #000;
-      color: #ef4444;
-      font-size: 36px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 15px;
-    }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+</style>
 
-    .name {
-      font-size: 20px;
-      font-weight: bold;
-      color: #dc2626;
-    }
-
-    .contact {
-      font-size: 12px;
-      color: #374151;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
-    .right {
-      padding: 30px;
-    }
-
-    .section {
-      margin-bottom: 24px;
-    }
-
-    .section-title {
-      font-size: 14px;
-      font-weight: bold;
-      letter-spacing: 1px;
-      border-bottom: 1px solid #e5e7eb;
-      margin-bottom: 10px;
-      padding-bottom: 4px;
-    }
-
-    .content p { margin-bottom: 8px; }
-    .content ul { list-style: disc; margin-left: 20px; }
-    .content strong { font-weight: bold; }
-  </style>
 </head>
 
 <body>

@@ -4,7 +4,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Simple Resume</title>
-
 <style>
   body {
     background:#f3f4f6;
@@ -23,7 +22,7 @@
     font-size: 30px;
     font-weight: 700;
     text-align: center;
-    color: #1e3a8a;
+    color: #1e3a8a !important;
   }
 
   .contact {
@@ -46,12 +45,13 @@
 
   .section {
     margin-bottom: 25px;
+    page-break-inside: avoid;
   }
 
   .title {
     font-size: 14px;
     font-weight: bold;
-    color: #1e3a8a;
+    color: #1e3a8a !important;
     border-bottom: 1px solid #c7d2fe;
     margin-bottom: 8px;
     padding-bottom: 4px;
@@ -60,7 +60,38 @@
 
   .content p { margin-bottom: 8px; }
   .content ul { list-style: disc; margin-left: 18px; }
+
+  /* ========================= */
+  /* PRINT MODE – REQUIRED */
+  /* ========================= */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      background: white !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .page {
+      width: 210mm !important;
+      margin: 0 !important;
+    }
+
+    button {
+      display: none !important;
+    }
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
 </style>
+
 </head>
 
 <body>

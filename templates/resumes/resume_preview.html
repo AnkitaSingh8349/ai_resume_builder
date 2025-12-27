@@ -109,13 +109,21 @@
         </a>
 
       </div>
+<!-- DOWNLOAD -->
+{% if active in free_templates %}
+  <button onclick="window.print()"
+          class="mt-6 block w-full bg-green-600 hover:bg-green-700
+                 text-white font-semibold py-3 rounded-xl">
+    Download PDF
+  </button>
+{% else %}
+  <a href="{% url 'resumes:download_resume' resume.id %}?template={{ active }}"
+     class="mt-6 block w-full text-center bg-purple-600 hover:bg-purple-700
+            text-white font-semibold py-3 rounded-xl">
+    Download Premium PDF
+  </a>
+{% endif %}
 
-      <!-- DOWNLOAD -->
-      <a href="{% url 'resumes:download_resume' resume.id %}?template={{ active }}"
-         class="mt-6 block text-center bg-green-600 hover:bg-green-700
-                text-white font-semibold py-3 rounded-xl">
-        Download PDF
-      </a>
 
     </aside>
 

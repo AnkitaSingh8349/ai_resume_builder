@@ -6,14 +6,45 @@
 <title>{{ resume.full_name }} | Executive Resume</title>
 
 
-
 <style>
-:root {
-  --theme: {{ resume.color|default:"#1f2937" }};
-}
-.theme { color: var(--theme); }
-.theme-border { border-color: var(--theme); }
+  :root {
+    --theme: {{ resume.color|default:"#1f2937" }};
+  }
+
+  .theme { color: var(--theme); }
+  .theme-border { border-color: var(--theme); }
+
+  /* ========================= */
+  /* PRINT MODE – REQUIRED */
+  /* ========================= */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      background: white !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    button {
+      display: none !important;
+    }
+
+    .shadow,
+    .shadow-lg {
+      box-shadow: none !important;
+    }
+  }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
 </style>
+
 </head>
 
 <body class="bg-gray-200">

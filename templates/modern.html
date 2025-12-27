@@ -4,80 +4,111 @@
 <head>
   <meta charset="UTF-8">
   <title>Modern Resume</title>
+<style>
+  .modern-resume {
+    max-width: 900px;
+    margin: 30px auto;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    background: #ffffff;
+    font-family: "Inter", Arial, sans-serif;
+    box-shadow: 0 20px 40px rgba(0,0,0,.08);
+  }
 
-  <style>
+  .modern-left {
+    background-color: #111827 !important;
+    color: #ffffff !important;
+    padding: 32px;
+  }
+
+  .modern-right {
+    padding: 32px;
+  }
+
+  .modern-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #ffffff;
+    margin-bottom: 16px;
+  }
+
+  .modern-left h1 {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .modern-left p {
+    font-size: 13px;
+    opacity: .9;
+  }
+
+  .modern-section {
+    margin-bottom: 24px;
+  }
+
+  .modern-section h2 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 6px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .modern-right p,
+  .modern-right ul {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2937;
+  }
+
+  .modern-right ul {
+    padding-left: 18px;
+    list-style: disc;
+  }
+
+  /* ========================= */
+  /* PRINT MODE – REQUIRED */
+  /* ========================= */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      background: white !important;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
     .modern-resume {
-      max-width: 900px;
-      margin: 30px auto;
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      background: #ffffff;
-      font-family: "Inter", Arial, sans-serif;
-      box-shadow: 0 20px 40px rgba(0,0,0,.08);
+      width: 210mm !important;
+      margin: 0 !important;
+      box-shadow: none !important;
     }
 
-    .modern-left {
-      background: #111827;
-      color: #ffffff;
-      padding: 32px;
+    button {
+      display: none !important;
     }
+  }
 
-    .modern-right {
-      padding: 32px;
-    }
+  @page {
+    size: A4;
+    margin: 0;
+  }
 
-    .modern-avatar {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #ffffff;
-      margin-bottom: 16px;
+  @media (max-width: 768px) {
+    .modern-resume {
+      grid-template-columns: 1fr;
     }
+  }
+</style>
 
-    .modern-left h1 {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .modern-left p {
-      font-size: 13px;
-      opacity: .9;
-    }
-
-    .modern-section {
-      margin-bottom: 24px;
-    }
-
-    .modern-section h2 {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1px;
-      border-bottom: 1px solid #e5e7eb;
-      padding-bottom: 6px;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-    }
-
-    .modern-right p,
-    .modern-right ul {
-      font-size: 14px;
-      line-height: 1.6;
-      color: #1f2937;
-    }
-
-    .modern-right ul {
-      padding-left: 18px;
-      list-style: disc;
-    }
-
-    @media (max-width: 768px) {
-      .modern-resume {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
 </head>
 
 <body>

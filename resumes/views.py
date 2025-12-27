@@ -226,47 +226,41 @@ def resume_preview(request, id):
 # ==================================================
 @login_required
 def download_resume(request, id):
-    # ✅ import INSIDE function
-    from weasyprint import HTML  
+    from weasyprint import HTML
 
     resume = get_object_or_404(Resume, id=id, user=request.user)
 
     FREE_TEMPLATES = ["modern", "simple", "professional"]
     PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
 
-    template = request.GET.get("template")
-
-    if not template:
-        template = resume.template if resume.template in FREE_TEMPLATES else "simple"
-
-    template = template.strip().lower()
+    template = request.GET.get("template", resume.template).lower().strip()
 
     if template not in FREE_TEMPLATES + PREMIUM_TEMPLATES:
         template = "simple"
 
-    if template in PREMIUM_TEMPLATES:
-        if not request.session.get("paid_for_download"):
-            request.session["pending_resume_id"] = resume.id
-            request.session["pending_template"] = template
-            return redirect(reverse("resumes:checkout"))
+    # 🔒 Block free templates from backend
+    if template in FREE_TEMPLATES:
+        return redirect(
+            f"{reverse('resumes:resume_preview', args=[resume.id])}?template={template}"
+        )
 
-        request.session.pop("paid_for_download", None)
+    # 🔐 Require payment for premium
+    if not request.session.get("paid_for_download"):
+        request.session["pending_resume_id"] = resume.id
+        request.session["pending_template"] = template
+        return redirect(reverse("resumes:checkout"))
+
+    request.session.pop("paid_for_download", None)
 
     template_map = {
-        "modern": "modern.html",
-        "professional": "professional.html",
-        "simple": "simple.html",
         "creative": "creative.html",
         "executive": "executive.html",
         "minimalist": "minimalist.html",
     }
 
     html_string = render_to_string(
-        template_map.get(template, "modern.html"),
-        {
-            "resume": resume,
-            "is_public": True,
-        },
+        template_map[template],
+        {"resume": resume, "is_public": True},
         request=request,
     )
 

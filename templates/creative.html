@@ -7,14 +7,44 @@
 
   <!-- Tailwind -->
 
+<style>
+  :root {
+    --theme-color: {{ resume.color|default:"#2563eb" }};
+  }
 
-  <style>
-    :root {
-      --theme-color: {{ resume.color|default:"#2563eb" }};
+  .theme-color { color: var(--theme-color); }
+  .theme-border { border-color: var(--theme-color); }
+
+  /* ========================= */
+  /* PRINT MODE (REQUIRED) */
+  /* ========================= */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      background: white !important;
     }
-    .theme-color { color: var(--theme-color); }
-    .theme-border { border-color: var(--theme-color); }
-  </style>
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    button {
+      display: none !important;
+    }
+
+    .shadow {
+      box-shadow: none !important;
+    }
+  }
+
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+</style>
+
 </head>
 
 <body class="bg-gray-100">
