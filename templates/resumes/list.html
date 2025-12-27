@@ -54,12 +54,11 @@ bg-gradient-to-br from-blue-900 via-indigo-900 to-purple-900 text-white
            class="flex-1 text-center bg-indigo-500 hover:bg-indigo-600 px-4 py-2 rounded-lg text-sm font-semibold">
           Edit
         </a>
+<a href="{% url 'resumes:resume_preview' resume.id %}"
+   class="flex-1 text-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-semibold">
+  Print / Download
+</a>
 
-        <!-- PDF -->
-        <a href="{% url 'resumes:download_resume' resume.id %}"
-           class="flex-1 text-center bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-semibold">
-          PDF
-        </a>
 
       </div>
     </div>

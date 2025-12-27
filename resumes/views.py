@@ -7,7 +7,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
-from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from .models import Resume
@@ -87,6 +86,13 @@ PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
 # ==================================================
 @login_required
 def create_checkout_session(request):
+    resume_id = request.GET.get("resume_id")
+    template = request.GET.get("template")
+
+    # SAVE INFO
+    request.session["pending_resume_id"] = resume_id
+    request.session["pending_template"] = template
+
     stripe = get_stripe()
 
     session = stripe.checkout.Session.create(
@@ -95,9 +101,7 @@ def create_checkout_session(request):
         line_items=[{
             "price_data": {
                 "currency": "usd",
-                "product_data": {
-                    "name": "Premium Resume Download",
-                },
+                "product_data": {"name": "Premium Resume"},
                 "unit_amount": 500,
             },
             "quantity": 1,
@@ -107,6 +111,7 @@ def create_checkout_session(request):
         ),
         cancel_url=request.build_absolute_uri("/"),
     )
+
     return redirect(session.url)
 
 
@@ -115,17 +120,61 @@ def create_checkout_session(request):
 # ==================================================
 @login_required
 def payment_success(request):
-    request.session["paid_for_download"] = True
+    request.session["premium_unlocked"] = True
 
     resume_id = request.session.get("pending_resume_id")
     template = request.session.get("pending_template")
 
-    if resume_id and template:
-        return redirect(
-            f"{reverse('resumes:download_resume', args=[resume_id])}?template={template}"
-        )
+    if not resume_id or not template:
+        return redirect("resumes:my_resumes")
 
-    return redirect("dashboard")
+    return redirect(
+        f"{reverse('resumes:paid_print', args=[resume_id])}?template={template}"
+    )
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Resume
+
+
+@login_required
+def paid_print(request, id):
+    resume = get_object_or_404(Resume, id=id)
+
+    # Get selected template (from URL or saved resume)
+    template_key = request.GET.get("template", resume.template)
+
+    # All available templates
+    template_map = {
+        "modern": "modern.html",
+        "professional": "professional.html",
+        "simple": "simple.html",
+        "creative": "creative.html",
+        "executive": "executive.html",
+        "minimalist": "minimalist.html",
+    }
+
+    # Premium templates list
+    premium_templates = ["creative", "executive", "minimalist"]
+
+    # 🔒 Block premium templates if not paid
+    if template_key in premium_templates:
+        if not request.session.get("premium_unlocked"):
+            return redirect("resumes:resume_preview", id=id)
+
+    template_file = template_map.get(template_key)
+
+    # Safety fallback
+    if not template_file:
+        return redirect("resumes:resume_preview", id=id)
+
+    return render(
+        request,
+        "resumes/paid_print.html",
+        {
+            "resume": resume,
+            "template_file": template_file,
+        }
+    )
 
 
 # ==================================================
@@ -223,57 +272,6 @@ def resume_preview(request, id):
     )
 # ==================================================
 # DOWNLOAD PDF (WEASYPRINT – RENDER SAFE) ✅
-# ==================================================
-@login_required
-def download_resume(request, id):
-    from weasyprint import HTML
-
-    resume = get_object_or_404(Resume, id=id, user=request.user)
-
-    FREE_TEMPLATES = ["modern", "simple", "professional"]
-    PREMIUM_TEMPLATES = ["creative", "executive", "minimalist"]
-
-    template = request.GET.get("template", resume.template).lower().strip()
-
-    if template not in FREE_TEMPLATES + PREMIUM_TEMPLATES:
-        template = "simple"
-
-    # 🔒 Block free templates from backend
-    if template in FREE_TEMPLATES:
-        return redirect(
-            f"{reverse('resumes:resume_preview', args=[resume.id])}?template={template}"
-        )
-
-    # 🔐 Require payment for premium
-    if not request.session.get("paid_for_download"):
-        request.session["pending_resume_id"] = resume.id
-        request.session["pending_template"] = template
-        return redirect(reverse("resumes:checkout"))
-
-    request.session.pop("paid_for_download", None)
-
-    template_map = {
-        "creative": "creative.html",
-        "executive": "executive.html",
-        "minimalist": "minimalist.html",
-    }
-
-    html_string = render_to_string(
-        template_map[template],
-        {"resume": resume, "is_public": True},
-        request=request,
-    )
-
-    pdf = HTML(
-        string=html_string,
-        base_url=request.build_absolute_uri("/"),
-    ).write_pdf()
-
-    response = HttpResponse(pdf, content_type="application/pdf")
-    response["Content-Disposition"] = (
-        f'attachment; filename="{resume.full_name or "resume"}.pdf"'
-    )
-    return response
 
 
 # ==================================================

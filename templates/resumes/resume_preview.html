@@ -109,20 +109,20 @@
         </a>
 
       </div>
-<!-- DOWNLOAD -->
-{% if active in free_templates %}
-  <button onclick="window.print()"
-          class="mt-6 block w-full bg-green-600 hover:bg-green-700
-                 text-white font-semibold py-3 rounded-xl">
+ {% if active in free_templates %}
+  <!-- FREE -->
+  <a href="{% url 'resumes:paid_print' resume.id %}?template={{ active }}"
+     class="mt-6 block w-full text-center bg-green-600 text-white py-3 rounded-xl">
     Download PDF
-  </button>
+  </a>
 {% else %}
-  <button onclick="window.print()"
-          class="mt-6 block w-full bg-purple-600 hover:bg-purple-700
-                 text-white font-semibold py-3 rounded-xl">
-    Download Premium PDF
-  </button>
+  <!-- PREMIUM -->
+  <a href="{% url 'resumes:checkout' %}?resume_id={{ resume.id }}&template={{ active }}"
+     class="mt-6 block w-full text-center bg-purple-600 text-white py-3 rounded-xl">
+    Unlock Premium
+  </a>
 {% endif %}
+
 
     </aside>
 
