@@ -5,8 +5,51 @@
     <title>{% block title %}Resume Builder{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+/* ========================= */
+/* PRINT ONLY RESUME */
+/* ========================= */
+@media print {
+
+  /* Hide everything */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Show only resume */
+  .resume-print-area,
+  .resume-print-area * {
+    visibility: visible !important;
+  }
+
+  /* Position resume at top-left */
+  .resume-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  /* Hide browser UI leftovers */
+  header, nav, footer, aside, button {
+    display: none !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+</style>
+
+    
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
