@@ -117,13 +117,12 @@
     Download PDF
   </button>
 {% else %}
-  <a href="{% url 'resumes:download_resume' resume.id %}?template={{ active }}"
-     class="mt-6 block w-full text-center bg-purple-600 hover:bg-purple-700
-            text-white font-semibold py-3 rounded-xl">
+  <button onclick="window.print()"
+          class="mt-6 block w-full bg-purple-600 hover:bg-purple-700
+                 text-white font-semibold py-3 rounded-xl">
     Download Premium PDF
-  </a>
+  </button>
 {% endif %}
-
 
     </aside>
 
