@@ -28,7 +28,6 @@
 
       <div class="space-y-3">
 
-        <!-- FREE TEMPLATES -->
         <a href="?template=modern"
            class="block px-4 py-3 rounded-xl border
            {% if active == 'modern' %} bg-indigo-600 text-white {% endif %}">
@@ -49,7 +48,6 @@
 
         <div class="pt-3 border-t"></div>
 
-        <!-- PREMIUM / PRIME TEMPLATES -->
         <a href="?template=creative"
            class="block px-4 py-3 rounded-xl border
            {% if active == 'creative' %} bg-purple-600 text-white {% endif %}">
@@ -91,7 +89,7 @@
         Resume Preview
       </p>
 
-      <!-- PREVIEW (DO NOT USE FOR PDF) -->
+      <!-- ✅ ONLY THIS DIV WILL GO TO PDF -->
       <div id="resume-preview" class="mx-auto bg-white">
         {% include active_template %}
       </div>
@@ -105,53 +103,34 @@
 <!-- ================= html2pdf ================= -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
+<!-- ================= FINAL FIXED PDF FUNCTION ================= -->
 <script>
 function downloadResumePDF() {
 
-  const preview = document.getElementById("resume-preview");
-  const clone = preview.cloneNode(true);
+  const element = document.getElementById("resume-preview");
 
-  const wrapper = document.createElement("div");
-  wrapper.style.position = "fixed";
-  wrapper.style.left = "-9999px";
-  wrapper.style.top = "0";
+  // 🔥 FORCE SCROLL TO TOP (MAIN FIX)
+  window.scrollTo(0, 0);
 
-  const a4 = document.createElement("div");
-  a4.style.width = "210mm";
-  a4.style.minHeight = "297mm";
-  a4.style.background = "white";
-  a4.style.padding = "15mm";
-  a4.style.boxSizing = "border-box";
-
-  a4.appendChild(clone);
-  wrapper.appendChild(a4);
-  document.body.appendChild(wrapper);
+  const pxToMm = px => px * 0.264583;
+  const heightMm = pxToMm(element.scrollHeight);
 
   html2pdf()
     .set({
       filename: "{{ resume.full_name|default:'resume' }}.pdf",
+      margin: [0, 0, 0, 0],
       image: { type: "jpeg", quality: 1 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-    })
-    .from(a4)
-    .save()
-    .then(() => {
-      document.body.removeChild(wrapper);
-    });
-}
-</script>
-
-<script>
-function downloadResumePDF() {
-  const element = document.getElementById("resume-to-pdf");
-
-  html2pdf()
-    .set({
-      filename: "resume.pdf",
-      image: { type: "jpeg", quality: 1 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+      html2canvas: {
+        scale: 2,
+        scrollX: 0,
+        scrollY: -window.scrollY,   // 🔥 KILLS TOP WHITE SPACE
+        backgroundColor: "#ffffff"
+      },
+      jsPDF: {
+        unit: "mm",
+        format: [210, heightMm],    // ✅ AUTO HEIGHT = jitna data utna page
+        orientation: "portrait"
+      }
     })
     .from(element)
     .save();

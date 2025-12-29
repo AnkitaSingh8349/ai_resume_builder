@@ -10,67 +10,66 @@
 
     <style>
       /* ========================= */
-      /* SAFE PDF / SCREEN STYLES  */
+      /* PDF MODE FIX (IMPORTANT)  */
       /* ========================= */
 
-      /* IMPORTANT:
-         ❌ NO @media print
-         ❌ NO @page
-         html2pdf must control layout
-      */
+      /* Hide header in PDF */
+      body.pdf-mode header {
+        display: none !important;
+      }
 
-      .resume-print-area {
-        width: 210mm;
-        max-width: 210mm;
-        margin: 0 auto;
-        background: white;
-        overflow: hidden;
+      /* Remove top spacing in PDF */
+      body.pdf-mode main {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      /* Safety: resume should start from top */
+      body.pdf-mode #resume-preview {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
       }
     </style>
 </head>
 
 <body class="{% block body_class %}{% endblock %}">
 
-<!-- ================= FIXED NAVBAR ================= -->
+<!-- ================= FIXED NAVBAR (SCREEN ONLY) ================= -->
 <header class="fixed top-0 left-0 w-full z-50 bg-white shadow">
 
     <!-- TOP BAR -->
     <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
 
         <!-- LOGO -->
-        <a href="{% url 'home' %}" class="flex items-center gap-2 text-2xl font-bold text-indigo-600">
+        <a href="{% url 'home' %}"
+           class="flex items-center gap-2 text-2xl font-bold text-indigo-600">
             🏠 <span>Resume Builder</span>
         </a>
 
         <!-- NAV LINKS -->
         <nav class="flex items-center gap-6 text-sm font-semibold text-gray-700">
 
-            <!-- BACK -->
             <a href="javascript:history.back()"
                class="hover:text-indigo-600 transition">
                 ← Back
             </a>
 
-            <!-- HOME -->
             <a href="{% url 'home' %}"
                class="hover:text-indigo-600 transition">
                 Home
             </a>
 
-            <!-- CREATE RESUME -->
             <a href="/resume/create/"
                class="hover:text-indigo-600 transition">
                 Create Resume
             </a>
 
-            <!-- LOGOUT -->
             {% if user.is_authenticated %}
             <a href="{% url 'logout' %}"
                class="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition">
                 Logout
             </a>
             {% endif %}
-
         </nav>
     </div>
 
@@ -79,6 +78,7 @@
 </header>
 
 <!-- ================= PAGE CONTENT ================= -->
+<!-- pt-28 ONLY FOR SCREEN -->
 <main class="pt-28">
     {% block content %}{% endblock %}
 </main>
