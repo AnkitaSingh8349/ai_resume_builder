@@ -3,115 +3,188 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>{{ resume.full_name }} | Modern Resume</title>
+<title>{{ resume.full_name }} | Resume</title>
+
+<!-- html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
   :root {
     --theme: {{ resume.color|default:"#2563eb" }};
   }
 
-  .theme { color: var(--theme); }
-  .theme-bg { background-color: var(--theme) !important; }
-
-  /* ========================= */
-  /* PRINT MODE – REQUIRED */
-  /* ========================= */
-  @media print {
-    body {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      background: white !important;
-    }
-
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    button {
-      display: none !important;
-    }
-
-    .shadow,
-    .shadow-lg {
-      box-shadow: none !important;
-    }
-
-    /* Fix grid for print */
-    .grid {
-      display: grid !important;
-    }
+  body {
+    background: #f3f4f6;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
   }
+
+  /* ===== FORCE ONE PAGE A4 ===== */
+  .page {
+    width: 210mm;
+    height: 297mm;            /* 🔒 ONE PAGE ONLY */
+    margin: 0 auto;
+    background: white;
+    display: flex;
+    overflow: hidden;         /* 🔒 NO SECOND PAGE */
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 35%;
+    background: var(--theme);
+    color: white;
+    padding: 16mm 10mm;
+    box-sizing: border-box;
+  }
+
+  .avatar {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: white;
+    color: #111;
+    font-size: 36px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .sidebar h1 {
+    font-size: 18px;
+    text-align: center;
+    margin: 0;
+  }
+
+  .contact {
+    font-size: 11px;
+    text-align: center;
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+
+  .sidebar h2 {
+    font-size: 13px;
+    margin-top: 18px;
+    margin-bottom: 6px;
+  }
+
+  /* MAIN CONTENT */
+  .main {
+    width: 65%;
+    padding: 16mm;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .section {
+    margin-bottom: 12px;
+  }
+
+  .section h2 {
+    font-size: 15px;
+    color: var(--theme);
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+  }
+
+  .content {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .content p { margin: 0 0 4px; }
+  .content ul { margin-left: 14px; }
 
   @page {
     size: A4;
     margin: 0;
   }
 </style>
-
 </head>
 
-<body class="bg-gray-100">
+<body>
 
-<div class="max-w-5xl mx-auto my-10 bg-white shadow grid grid-cols-3">
+<!-- ===== ONE PAGE RESUME ===== -->
+<div class="page" id="resume-to-pdf">
 
   <!-- SIDEBAR -->
-  <aside class="col-span-1 p-6 theme-bg text-white">
-
-    <!-- INITIAL AVATAR (NO IMAGE) -->
-    <div class="mx-auto w-28 h-28 rounded-full flex items-center justify-center
-                bg-white text-gray-900 text-4xl font-bold border-4 border-white">
+  <aside class="sidebar">
+    <div class="avatar">
       {{ resume.full_name|slice:":1"|upper }}
     </div>
 
-    <!-- NAME -->
-    <h1 class="text-xl font-bold text-center mt-4">
-      {{ resume.full_name }}
-    </h1>
+    <h1>{{ resume.full_name }}</h1>
 
-    <!-- CONTACT -->
-    <p class="text-xs text-center mt-2">
+    <div class="contact">
       {{ resume.email }}<br>
       {{ resume.phone }}
-    </p>
+    </div>
 
-    <hr class="my-4 opacity-30">
-
-    <!-- SKILLS -->
-    <h2 class="text-sm font-semibold mb-2">Skills</h2>
-    {{ resume.skills|safe }}
-
+    {% if resume.skills %}
+    <h2>Skills</h2>
+    <div class="content">{{ resume.skills|safe }}</div>
+    {% endif %}
   </aside>
 
-  <!-- MAIN CONTENT -->
-  <main class="col-span-2 p-8">
+  <!-- MAIN -->
+  <main class="main">
 
-    <!-- PROFILE -->
-    <section class="mb-6">
-      <h2 class="font-semibold text-lg border-b pb-1 mb-2 theme">
-        Profile
-      </h2>
-      {{ resume.summary|safe }}
-    </section>
+    {% if resume.summary %}
+    <div class="section">
+      <h2>Profile</h2>
+      <div class="content">{{ resume.summary|safe }}</div>
+    </div>
+    {% endif %}
 
-    <!-- EXPERIENCE -->
-    <section class="mb-6">
-      <h2 class="font-semibold text-lg border-b pb-1 mb-2 theme">
-        Experience
-      </h2>
-      {{ resume.experience|safe }}
-    </section>
+    {% if resume.experience %}
+    <div class="section">
+      <h2>Experience</h2>
+      <div class="content">{{ resume.experience|safe }}</div>
+    </div>
+    {% endif %}
 
-    <!-- EDUCATION -->
-    <section>
-      <h2 class="font-semibold text-lg border-b pb-1 mb-2 theme">
-        Education
-      </h2>
-      {{ resume.education|safe }}
-    </section>
+    {% if resume.education %}
+    <div class="section">
+      <h2>Education</h2>
+      <div class="content">{{ resume.education|safe }}</div>
+    </div>
+    {% endif %}
 
   </main>
 
 </div>
+
+<!-- ===== DOWNLOAD FUNCTION ===== -->
+<script>
+function downloadResumePDF() {
+  const element = document.getElementById("resume-to-pdf");
+
+  html2pdf()
+    .set({
+      filename: "{{ resume.full_name|default:'resume' }}.pdf",
+      margin: 0,
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: {
+        scale: 2,
+        windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait"
+      }
+    })
+    .from(element)
+    .save();
+}
+</script>
 
 </body>
 </html>

@@ -2,117 +2,151 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>{{ resume.full_name }} | Resume</title>
+<meta charset="UTF-8">
+<title>{{ resume.full_name }} | Resume</title>
 
-  <!-- Tailwind -->
+<!-- html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
   :root {
     --theme-color: {{ resume.color|default:"#2563eb" }};
   }
 
-  .theme-color { color: var(--theme-color); }
-  .theme-border { border-color: var(--theme-color); }
-
-  /* ========================= */
-  /* PRINT MODE (REQUIRED) */
-  /* ========================= */
-  @media print {
-    body {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      background: white !important;
-    }
-
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    button {
-      display: none !important;
-    }
-
-    .shadow {
-      box-shadow: none !important;
-    }
+  body {
+    margin: 0;
+    padding: 0;
+    background: #f3f4f6;
+    font-family: Arial, sans-serif;
   }
+
+  /* ===== FORCE ONE PAGE A4 ===== */
+  .page {
+    width: 210mm;
+    height: 297mm;            /* 🔒 ONE PAGE ONLY */
+    margin: 0 auto;
+    background: white;
+    padding: 16mm;
+    box-sizing: border-box;
+    overflow: hidden;         /* 🔒 NO SECOND PAGE */
+  }
+
+  /* HEADER */
+  .header {
+    border-bottom: 2px solid var(--theme-color);
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+    font-weight: bold;
+    color: var(--theme-color);
+    margin: 0;
+    letter-spacing: 1px;
+  }
+
+  .header p {
+    font-size: 11px;
+    color: #374151;
+    margin-top: 6px;
+  }
+
+  /* SECTIONS */
+  .section {
+    margin-bottom: 14px;
+  }
+
+  .section h2 {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--theme-color);
+    margin-bottom: 6px;
+  }
+
+  .content {
+    font-size: 11px;
+    line-height: 1.4;
+    color: #1f2937;
+  }
+
+  .content p { margin: 0 0 4px; }
+  .content ul { margin: 0 0 4px 16px; }
 
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 0;
   }
 </style>
-
 </head>
 
-<body class="bg-gray-100">
+<body>
 
-<div class="max-w-4xl mx-auto bg-white p-10 my-10 rounded-lg shadow">
+<!-- ===== ONE PAGE RESUME ===== -->
+<div class="page" id="resume-to-pdf">
 
-  <!-- ================= HEADER ================= -->
-  <header class="border-b pb-6 mb-8">
+  <!-- HEADER -->
+  <div class="header">
+    <h1>{{ resume.full_name }}</h1>
+    <p>{{ resume.email }} • {{ resume.phone }}</p>
+  </div>
 
-    <h1 class="text-3xl font-bold theme-color tracking-wide">
-      {{ resume.full_name }}
-    </h1>
-
-    <p class="text-sm text-gray-600 mt-2">
-      {{ resume.email }} • {{ resume.phone }}
-    </p>
-
-  </header>
-
-  <!-- ================= SUMMARY ================= -->
   {% if resume.summary %}
-  <section class="mb-6">
-    <h2 class="font-semibold text-lg theme-color mb-2">
-      Professional Summary
-    </h2>
-    <div class="text-sm leading-relaxed text-gray-800">
-      {{ resume.summary|safe }}
-    </div>
-  </section>
+  <div class="section">
+    <h2>Professional Summary</h2>
+    <div class="content">{{ resume.summary|safe }}</div>
+  </div>
   {% endif %}
 
-  <!-- ================= SKILLS ================= -->
   {% if resume.skills %}
-  <section class="mb-6">
-    <h2 class="font-semibold text-lg theme-color mb-2">
-      Skills
-    </h2>
-    <div class="text-sm leading-relaxed text-gray-800">
-      {{ resume.skills|safe }}
-    </div>
-  </section>
+  <div class="section">
+    <h2>Skills</h2>
+    <div class="content">{{ resume.skills|safe }}</div>
+  </div>
   {% endif %}
 
-  <!-- ================= EXPERIENCE ================= -->
   {% if resume.experience %}
-  <section class="mb-6">
-    <h2 class="font-semibold text-lg theme-color mb-2">
-      Experience
-    </h2>
-    <div class="text-sm leading-relaxed text-gray-800">
-      {{ resume.experience|safe }}
-    </div>
-  </section>
+  <div class="section">
+    <h2>Experience</h2>
+    <div class="content">{{ resume.experience|safe }}</div>
+  </div>
   {% endif %}
 
-  <!-- ================= EDUCATION ================= -->
   {% if resume.education %}
-  <section>
-    <h2 class="font-semibold text-lg theme-color mb-2">
-      Education
-    </h2>
-    <div class="text-sm leading-relaxed text-gray-800">
-      {{ resume.education|safe }}
-    </div>
-  </section>
+  <div class="section">
+    <h2>Education</h2>
+    <div class="content">{{ resume.education|safe }}</div>
+  </div>
   {% endif %}
 
 </div>
+
+<!-- ===== DOWNLOAD FUNCTION ===== -->
+<script>
+function downloadResumePDF() {
+  const element = document.getElementById("resume-to-pdf");
+
+  html2pdf()
+    .set({
+      filename: "{{ resume.full_name|default:'resume' }}.pdf",
+      margin: 0,
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: {
+        scale: 2,
+        windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait"
+      }
+    })
+    .from(element)
+    .save();
+}
+</script>
 
 </body>
 </html>

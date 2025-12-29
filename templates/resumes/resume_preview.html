@@ -109,12 +109,13 @@
         </a>
 
       </div>
- {% if active in free_templates %}
+{% if active in free_templates %}
   <!-- FREE -->
-  <a href="{% url 'resumes:paid_print' resume.id %}?template={{ active }}"
-     class="mt-6 block w-full text-center bg-green-600 text-white py-3 rounded-xl">
+  <button
+    onclick="downloadResumePDF()"
+    class="mt-6 block w-full text-center bg-green-600 text-white py-3 rounded-xl">
     Download PDF
-  </a>
+  </button>
 {% else %}
   <!-- PREMIUM -->
   <a href="{% url 'resumes:checkout' %}?resume_id={{ resume.id }}&template={{ active }}"
@@ -122,6 +123,7 @@
     Unlock Premium
   </a>
 {% endif %}
+
 
 
     </aside>

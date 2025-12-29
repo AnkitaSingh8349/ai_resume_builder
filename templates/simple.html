@@ -3,18 +3,27 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Simple Resume</title>
+<title>Resume Preview</title>
+
+<!-- html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 <style>
   body {
-    background:#f3f4f6;
+    background: #f3f4f6;
     font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
   }
 
+  /* A4 page */
   .page {
-    width: 850px;
-    margin: 40px auto;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0 auto 30px;
     background: white;
-    padding: 40px;
+    padding: 15mm;
+    box-sizing: border-box;
     border-top: 6px solid #1e3a8a;
   }
 
@@ -22,7 +31,7 @@
     font-size: 30px;
     font-weight: 700;
     text-align: center;
-    color: #1e3a8a !important;
+    color: #1e3a8a;
   }
 
   .contact {
@@ -37,11 +46,14 @@
     margin: 20px 0 30px;
   }
 
+  /* Flex layout (NOT grid) */
   .layout {
-    display: grid;
-    grid-template-columns: 65% 35%;
-    gap: 40px;
+    display: flex;
+    gap: 20mm;
   }
+
+  .layout > div:first-child { width: 65%; }
+  .layout > div:last-child  { width: 35%; }
 
   .section {
     margin-bottom: 25px;
@@ -51,7 +63,7 @@
   .title {
     font-size: 14px;
     font-weight: bold;
-    color: #1e3a8a !important;
+    color: #1e3a8a;
     border-bottom: 1px solid #c7d2fe;
     margin-bottom: 8px;
     padding-bottom: 4px;
@@ -59,57 +71,29 @@
   }
 
   .content p { margin-bottom: 8px; }
-  .content ul { list-style: disc; margin-left: 18px; }
-
-  /* ========================= */
-  /* PRINT MODE – REQUIRED */
-  /* ========================= */
-  @media print {
-    body {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      background: white !important;
-    }
-
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    .page {
-      width: 210mm !important;
-      margin: 0 !important;
-    }
-
-    button {
-      display: none !important;
-    }
-  }
+  .content ul { margin-left: 18px; }
 
   @page {
     size: A4;
     margin: 15mm;
   }
 </style>
-
 </head>
 
 <body>
 
-<div class="page">
+<!-- Resume -->
+<div class="page" id="resume-to-pdf">
 
-  <!-- HEADER -->
   <div class="name">{{ resume.full_name }}</div>
   <div class="contact">
-    {{ resume.phone }} &nbsp; • &nbsp; {{ resume.email }}
+    {{ resume.phone }} • {{ resume.email }}
   </div>
 
   <div class="hr"></div>
 
-  <!-- BODY -->
   <div class="layout">
 
-    <!-- LEFT -->
     <div>
       {% if resume.summary %}
       <div class="section">
@@ -126,7 +110,6 @@
       {% endif %}
     </div>
 
-    <!-- RIGHT -->
     <div>
       {% if resume.skills %}
       <div class="section">
@@ -144,8 +127,35 @@
     </div>
 
   </div>
-
 </div>
+
+<!-- Expose function for external button -->
+<script>
+function downloadResumePDF() {
+  const element = document.getElementById("resume-to-pdf");
+
+  html2pdf()
+    .set({
+      filename: "{{ resume.full_name|default:'resume' }}.pdf",
+      margin: [15, 0, 15, 0],
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: {
+        scale: 3,
+        windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait"
+      },
+      pagebreak: { mode: ["avoid-all", "css"] }
+    })
+    .from(element)
+    .save();
+}
+</script>
 
 </body>
 </html>

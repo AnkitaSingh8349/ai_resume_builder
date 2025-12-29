@@ -3,118 +3,162 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>{{ resume.full_name }} | Executive Resume</title>
+<title>One Page Resume</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-  :root {
-    --theme: {{ resume.color|default:"#1f2937" }};
+  body {
+    background: #f3f4f6;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
   }
 
-  .theme { color: var(--theme); }
-  .theme-border { border-color: var(--theme); }
-
-  /* ========================= */
-  /* PRINT MODE – REQUIRED */
-  /* ========================= */
-  @media print {
-    body {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-      background: white !important;
-    }
-
-    * {
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    }
-
-    button {
-      display: none !important;
-    }
-
-    .shadow,
-    .shadow-lg {
-      box-shadow: none !important;
-    }
+  /* ===== FORCE ONE PAGE ===== */
+  .page {
+    width: 210mm;
+    height: 297mm;              /* 🔒 FIXED HEIGHT */
+    margin: 0 auto;
+    background: white;
+    padding: 12mm;
+    box-sizing: border-box;
+    border-top: 6px solid #1e3a8a;
+    overflow: hidden;           /* 🔒 NO SECOND PAGE */
   }
+
+  .name {
+    font-size: 26px;
+    font-weight: 700;
+    text-align: center;
+    color: #1e3a8a;
+  }
+
+  .contact {
+    text-align: center;
+    font-size: 12px;
+    color: #374151;
+    margin-top: 4px;
+  }
+
+  .hr {
+    border-top: 2px solid #c7d2fe;
+    margin: 12px 0 16px;
+  }
+
+  /* Flex layout */
+  .layout {
+    display: flex;
+    gap: 12mm;
+  }
+
+  .left { width: 65%; }
+  .right { width: 35%; }
+
+  .section {
+    margin-bottom: 12px;
+  }
+
+  .title {
+    font-size: 12px;
+    font-weight: bold;
+    color: #1e3a8a;
+    border-bottom: 1px solid #c7d2fe;
+    margin-bottom: 4px;
+    padding-bottom: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .content {
+    font-size: 11px;            /* 🔽 SMALLER TEXT */
+    line-height: 1.35;
+  }
+
+  .content p { margin: 0 0 4px; }
+  .content ul { margin: 0 0 4px 14px; }
 
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 0;
   }
 </style>
-
 </head>
 
-<body class="bg-gray-200">
+<body>
 
-<div class="max-w-4xl mx-auto bg-white p-10 my-12 shadow-lg">
+<!-- ONE PAGE ONLY -->
+<div class="page" id="resume-to-pdf">
 
-  <!-- ================= HEADER ================= -->
-  <div class="border-b pb-6 mb-8">
+  <div class="name">{{ resume.full_name }}</div>
+  <div class="contact">
+    {{ resume.phone }} • {{ resume.email }}
+  </div>
 
-    <!-- NAME & CONTACT -->
-    <div>
-      <h1 class="text-4xl font-bold theme uppercase">
-        {{ resume.full_name }}
-      </h1>
-      <p class="text-sm text-gray-600 mt-2">
-        {{ resume.email }} • {{ resume.phone }}
-      </p>
+  <div class="hr"></div>
+
+  <div class="layout">
+
+    <div class="left">
+      {% if resume.summary %}
+      <div class="section">
+        <div class="title">SUMMARY</div>
+        <div class="content">{{ resume.summary|safe }}</div>
+      </div>
+      {% endif %}
+
+      {% if resume.experience %}
+      <div class="section">
+        <div class="title">EXPERIENCE</div>
+        <div class="content">{{ resume.experience|safe }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="right">
+      {% if resume.skills %}
+      <div class="section">
+        <div class="title">SKILLS</div>
+        <div class="content">{{ resume.skills|safe }}</div>
+      </div>
+      {% endif %}
+
+      {% if resume.education %}
+      <div class="section">
+        <div class="title">EDUCATION</div>
+        <div class="content">{{ resume.education|safe }}</div>
+      </div>
+      {% endif %}
     </div>
 
   </div>
-
-  <!-- ================= SUMMARY ================= -->
-  {% if resume.summary %}
-  <section class="mb-8">
-    <h2 class="font-bold text-sm uppercase tracking-widest theme mb-2">
-      Executive Summary
-    </h2>
-    <div class="text-sm leading-relaxed">
-      {{ resume.summary|safe }}
-    </div>
-  </section>
-  {% endif %}
-
-  <!-- ================= SKILLS ================= -->
-  {% if resume.skills %}
-  <section class="mb-8">
-    <h2 class="font-bold text-sm uppercase tracking-widest theme mb-4">
-      Skills
-    </h2>
-    <div class="text-sm leading-relaxed">
-      {{ resume.skills|safe }}
-    </div>
-  </section>
-  {% endif %}
-
-  <!-- ================= EXPERIENCE ================= -->
-  {% if resume.experience %}
-  <section class="mb-8">
-    <h2 class="font-bold text-sm uppercase tracking-widest theme mb-4">
-      Experience
-    </h2>
-    <div class="text-sm leading-relaxed">
-      {{ resume.experience|safe }}
-    </div>
-  </section>
-  {% endif %}
-
-  <!-- ================= EDUCATION ================= -->
-  {% if resume.education %}
-  <section>
-    <h2 class="font-bold text-sm uppercase tracking-widest theme mb-4">
-      Education
-    </h2>
-    <div class="text-sm leading-relaxed">
-      {{ resume.education|safe }}
-    </div>
-  </section>
-  {% endif %}
-
 </div>
+
+<!-- DOWNLOAD FUNCTION -->
+<script>
+function downloadResumePDF() {
+  const element = document.getElementById("resume-to-pdf");
+
+  html2pdf()
+    .set({
+      filename: "{{ resume.full_name|default:'resume' }}.pdf",
+      margin: 0,
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: {
+        scale: 2,
+        windowWidth: 794,
+        scrollX: 0,
+        scrollY: 0
+      },
+      jsPDF: {
+        unit: "mm",
+        format: "a4",
+        orientation: "portrait"
+      }
+    })
+    .from(element)
+    .save();
+}
+</script>
 
 </body>
 </html>
