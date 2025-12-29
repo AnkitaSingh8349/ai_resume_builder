@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <title>{{ resume.full_name }} | Resume</title>
 
-<!-- html2pdf -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
@@ -13,21 +12,27 @@
     --theme: {{ resume.color|default:"#2563eb" }};
   }
 
-  body {
-    background: #f3f4f6;
-    font-family: Arial, sans-serif;
+  /* 🔥 HARD RESET */
+  @page {
+    size: A4;
     margin: 0;
-    padding: 0;
   }
 
-  /* ===== FORCE ONE PAGE A4 ===== */
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: white;        /* 🔥 NOT GREY */
+    font-family: Arial, sans-serif;
+  }
+
+  /* ===== ONE PAGE ===== */
   .page {
     width: 210mm;
-    height: 297mm;            /* 🔒 ONE PAGE ONLY */
+    height: 296mm;            /* 🔥 NOT 297mm */
     margin: 0 auto;
     background: white;
     display: flex;
-    overflow: hidden;         /* 🔒 NO SECOND PAGE */
+    overflow: hidden;         /* 🔒 CUT overflow */
   }
 
   /* SIDEBAR */
@@ -72,7 +77,7 @@
     margin-bottom: 6px;
   }
 
-  /* MAIN CONTENT */
+  /* MAIN */
   .main {
     width: 65%;
     padding: 16mm;
@@ -99,20 +104,13 @@
 
   .content p { margin: 0 0 4px; }
   .content ul { margin-left: 14px; }
-
-  @page {
-    size: A4;
-    margin: 0;
-  }
 </style>
 </head>
 
 <body>
 
-<!-- ===== ONE PAGE RESUME ===== -->
 <div class="page" id="resume-to-pdf">
 
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="avatar">
       {{ resume.full_name|slice:":1"|upper }}
@@ -131,7 +129,6 @@
     {% endif %}
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
 
     {% if resume.summary %}
@@ -159,7 +156,7 @@
 
 </div>
 
-<!-- ===== DOWNLOAD FUNCTION ===== -->
+<!-- ===== PDF DOWNLOAD (NO DOUBLE PAGE) ===== -->
 <script>
 function downloadResumePDF() {
   const element = document.getElementById("resume-to-pdf");
@@ -170,10 +167,10 @@ function downloadResumePDF() {
       margin: 0,
       image: { type: "jpeg", quality: 1 },
       html2canvas: {
-        scale: 2,
-        windowWidth: 794,
+        scale: 1,              // 🔥 CRITICAL
         scrollX: 0,
-        scrollY: 0
+        scrollY: 0,
+        backgroundColor: "#ffffff"
       },
       jsPDF: {
         unit: "mm",
