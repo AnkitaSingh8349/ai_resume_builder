@@ -3,159 +3,119 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Resume Preview</title>
-
-<!-- html2pdf -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<title>Resume</title>
 
 <style>
   body {
-    background: #f3f4f6;
-    font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    background: #e5e7eb;
+    font-family: Arial, sans-serif;
   }
 
-  /* A4 page */
+  /* A4 PAGE */
   .page {
     width: 210mm;
-    min-height: 297mm;
-    margin: 0 auto 30px;
+    height: 297mm;          /* 🔴 FIXED HEIGHT */
+    margin: 0 auto;
     background: white;
+    overflow: hidden;       /* 🔴 NO SPLIT */
+    display: flex;          /* 🔴 SAME HEIGHT */
+  }
+
+  /* LEFT SIDEBAR */
+  .sidebar {
+    width: 35%;
+    background: #2563eb;
+    color: white;
     padding: 15mm;
     box-sizing: border-box;
-    border-top: 6px solid #1e3a8a;
+  }
+
+  .sidebar h3 {
+    margin-top: 30px;
+    font-size: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+    padding-bottom: 5px;
+  }
+
+  .sidebar p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  /* RIGHT CONTENT */
+  .content {
+    width: 65%;
+    padding: 15mm;
+    box-sizing: border-box;
   }
 
   .name {
-    font-size: 30px;
-    font-weight: 700;
-    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
     color: #1e3a8a;
+    margin-bottom: 10px;
   }
-
-  .contact {
-    text-align: center;
-    font-size: 13px;
-    color: #374151;
-    margin-top: 6px;
-  }
-
-  .hr {
-    border-top: 2px solid #c7d2fe;
-    margin: 20px 0 30px;
-  }
-
-  /* Flex layout (NOT grid) */
-  .layout {
-    display: flex;
-    gap: 20mm;
-  }
-
-  .layout > div:first-child { width: 65%; }
-  .layout > div:last-child  { width: 35%; }
 
   .section {
-    margin-bottom: 25px;
-    page-break-inside: avoid;
+    margin-bottom: 18px;
   }
 
   .title {
-    font-size: 14px;
+    font-size: 15px;
     font-weight: bold;
     color: #1e3a8a;
     border-bottom: 1px solid #c7d2fe;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     padding-bottom: 4px;
-    letter-spacing: 1px;
   }
 
-  .content p { margin-bottom: 8px; }
-  .content ul { margin-left: 18px; }
+  .section p, .section li {
+    font-size: 13px;
+    line-height: 1.5;
+  }
 
-  @page {
-    size: A4;
-    margin: 15mm;
+  ul {
+    padding-left: 18px;
+    margin: 0;
   }
 </style>
 </head>
 
 <body>
 
-<!-- Resume -->
 <div class="page" id="resume-to-pdf">
 
-  <div class="name">{{ resume.full_name }}</div>
-  <div class="contact">
-    {{ resume.phone }} • {{ resume.email }}
+  <!-- LEFT -->
+  <div class="sidebar">
+    <p>{{ resume.email }}</p>
+
+    <h3>Skills</h3>
+    {{ resume.skills|safe }}
   </div>
 
-  <div class="hr"></div>
+  <!-- RIGHT -->
+  <div class="content">
+    <div class="name">{{ resume.full_name }}</div>
 
-  <div class="layout">
-
-    <div>
-      {% if resume.summary %}
-      <div class="section">
-        <div class="title">SUMMARY</div>
-        <div class="content">{{ resume.summary|safe }}</div>
-      </div>
-      {% endif %}
-
-      {% if resume.experience %}
-      <div class="section">
-        <div class="title">EXPERIENCE</div>
-        <div class="content">{{ resume.experience|safe }}</div>
-      </div>
-      {% endif %}
+    <div class="section">
+      <div class="title">Profile</div>
+      {{ resume.summary|safe }}
     </div>
 
-    <div>
-      {% if resume.skills %}
-      <div class="section">
-        <div class="title">SKILLS</div>
-        <div class="content">{{ resume.skills|safe }}</div>
-      </div>
-      {% endif %}
-
-      {% if resume.education %}
-      <div class="section">
-        <div class="title">EDUCATION</div>
-        <div class="content">{{ resume.education|safe }}</div>
-      </div>
-      {% endif %}
+    <div class="section">
+      <div class="title">Experience</div>
+      {{ resume.experience|safe }}
     </div>
 
+    <div class="section">
+      <div class="title">Education</div>
+      {{ resume.education|safe }}
+    </div>
   </div>
+
 </div>
-
-<!-- Expose function for external button -->
-<script>
-function downloadResumePDF() {
-  const element = document.getElementById("resume-to-pdf");
-
-  html2pdf()
-    .set({
-      filename: "{{ resume.full_name|default:'resume' }}.pdf",
-      margin: [15, 0, 15, 0],
-      image: { type: "jpeg", quality: 1 },
-      html2canvas: {
-        scale: 3,
-        windowWidth: 794,
-        scrollX: 0,
-        scrollY: 0
-      },
-      jsPDF: {
-        unit: "mm",
-        format: "a4",
-        orientation: "portrait"
-      },
-      pagebreak: { mode: ["avoid-all", "css"] }
-    })
-    .from(element)
-    .save();
-}
-</script>
 
 </body>
 </html>

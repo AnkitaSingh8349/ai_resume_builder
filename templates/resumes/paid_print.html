@@ -4,11 +4,10 @@
   <meta charset="UTF-8">
   <title>Downloading PDF...</title>
 
-  <!-- html2pdf library -->
+  <!-- html2pdf -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <style>
-    /* Screen styles (normal view) */
     body {
       margin: 0;
       padding: 0;
@@ -16,34 +15,20 @@
       font-family: Arial, sans-serif;
     }
 
-    /* PDF container */
+    /* ONLY wrapper – no sizing */
     .resume-print-area {
       background: white;
-    }
-
-    /* Force A4 sizing */
-    @page {
-      size: A4;
-      margin: 0;
-    }
-
-    /* Hide scrollbars / flicker */
-    html, body {
-      width: 210mm;
-      height: 297mm;
-      overflow: hidden;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ✅ THIS is what gets converted to PDF -->
+  <!-- This must already be A4-sized internally -->
   <div class="resume-print-area" id="resume-to-pdf">
     {% include template_file %}
   </div>
 
-  <!-- PDF generation -->
   <script>
     window.onload = function () {
       const element = document.getElementById("resume-to-pdf");
@@ -51,12 +36,10 @@
       html2pdf()
         .set({
           filename: "{{ resume.full_name|default:'resume' }}.pdf",
-          margin: 0,
           image: { type: "jpeg", quality: 0.98 },
           html2canvas: {
             scale: 2,
-            useCORS: true,
-            scrollY: 0
+            useCORS: true
           },
           jsPDF: {
             unit: "mm",
@@ -67,10 +50,9 @@
         .from(element)
         .save()
         .then(() => {
-          // Optional redirect after download
           setTimeout(() => {
             window.location.href = "/";
-          }, 2000);
+          }, 1500);
         });
     };
   </script>
