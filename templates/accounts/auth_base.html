@@ -1,57 +1,176 @@
 {% extends "base.html" %}
+{% load static %}
 
-{# 🔒 Disable scrolling ONLY on login page #}
-{% block body_class %}
-overflow-hidden
-{% endblock %}
-
-{% block title %}
-Login | AI Resume Builder
-{% endblock %}
+{% block body_class %}overflow-hidden{% endblock %}
 
 {% block content %}
 <section
-    class="h-screen flex items-center justify-center px-4
-           bg-cover bg-center relative"
-    style="background-image: url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1800&q=80');"
->
+  class="h-screen flex items-center justify-center px-4 bg-cover bg-center relative"
+  style="background-image:url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1800&q=80');">
 
-    {# 🔙 BACK BUTTON (previous page → home fallback) #}
-    <a href="{% url 'home' %}"
-       onclick="if (document.referrer) { event.preventDefault(); window.history.back(); }"
-       class="absolute top-24 left-5 z-30 px-5 py-2.5 rounded-full
-              bg-emerald-500/90 text-white font-semibold
-              hover:bg-emerald-600 transition">
-        ← Back
-    </a>
+  <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/70 via-purple-600/70 to-pink-600/70"></div>
 
-    {# 🌈 BACKGROUND OVERLAY #}
-    <div class="absolute inset-0 bg-gradient-to-br
-                from-sky-500/60 via-indigo-500/60 to-purple-600/60"></div>
+  <div class="relative z-10 w-full max-w-4xl bg-white/20 backdrop-blur-xl
+              rounded-2xl shadow-2xl grid grid-cols-1 md:grid-cols-2 overflow-hidden">
 
-    {# 📦 LOGIN CONTAINER #}
-    <div class="relative w-full max-w-5xl grid grid-cols-1 md:grid-cols-2
-                bg-white/20 backdrop-blur-2xl rounded-2xl
-                shadow-2xl overflow-hidden z-10">
-
-        {# LEFT PANEL #}
-        <div class="hidden md:flex items-center justify-center p-10 bg-white/10">
-            <div class="text-center text-white">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png"
-                     alt="Resume Icon"
-                     class="w-60 mx-auto mb-6">
-                <h2 class="text-2xl font-bold">AI Resume Builder</h2>
-                <p class="text-white/80 mt-2">
-                    Build professional resumes using AI
-                </p>
-            </div>
-        </div>
-
-        {# RIGHT PANEL (FORM) #}
-        <div class="p-6 sm:p-10">
-            {% block auth_form %}{% endblock %}
-        </div>
-
+    <!-- LEFT -->
+    <div class="hidden md:flex flex-col justify-center items-center text-white p-10 bg-white/10">
+      <img src="https://cdn-icons-png.flaticon.com/512/3135/3135768.png" class="w-48 mb-6">
+      <h2 class="text-2xl font-bold">AI Resume Builder</h2>
+      <p class="text-white/80 text-center mt-2">Build professional resumes using AI</p>
     </div>
+
+    <!-- RIGHT (IMPORTANT WRAPPER) -->
+    <div class="p-8 sm:p-12" data-auth-form>
+      {% block auth_form %}{% endblock %}
+    </div>
+
+  </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ========= HELPERS ========= */
+  function showError(el, msg) {
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove("hidden");
+  }
+
+  function clearError(el) {
+    if (!el) return;
+    el.textContent = "";
+    el.classList.add("hidden");
+  }
+
+  function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  }
+
+  /* ========= FORM BINDING ========= */
+  function bindForms() {
+
+    /* ================= LOGIN ================= */
+    const loginForm = document.getElementById("loginForm");
+    const loginError = document.getElementById("loginError");
+
+    if (loginForm) {
+      loginForm.onsubmit = async (e) => {
+        e.preventDefault();
+        clearError(loginError);
+
+        const email = loginForm.username.value.trim();
+        const password = loginForm.password.value.trim();
+
+        if (!email) return showError(loginError, "Email is required");
+        if (!isValidEmail(email)) return showError(loginError, "Enter valid email");
+        if (!password) return showError(loginError, "Password is required");
+
+        const res = await fetch(loginForm.action, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": loginForm.querySelector(
+              "[name=csrfmiddlewaretoken]"
+            ).value,
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: new FormData(loginForm),
+        });
+
+        const data = await res.json();
+        data.success
+          ? window.location.href = data.redirect
+          : showError(loginError, data.error);
+      };
+    }
+
+    /* ================= REGISTER ================= */
+    const registerForm = document.getElementById("registerForm");
+    const registerError = document.getElementById("registerError");
+
+    if (registerForm) {
+      registerForm.onsubmit = async (e) => {
+        e.preventDefault();
+        clearError(registerError);
+
+        const username = registerForm.username.value.trim();
+        const email = registerForm.email.value.trim();
+        const p1 = registerForm.password1.value;
+        const p2 = registerForm.password2.value;
+
+        /* ✅ USERNAME VALIDATION */
+        if (!username)
+          return showError(registerError, "Username is required");
+
+        if (username.length < 4)
+          return showError(registerError, "Username must be at least 4 characters");
+
+        /* ✅ EMAIL VALIDATION */
+        if (!email)
+          return showError(registerError, "Email is required");
+
+        if (!isValidEmail(email))
+          return showError(registerError, "Enter valid email");
+
+        /* ✅ PASSWORD STRENGTH */
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!passwordRegex.test(p1)) {
+          return showError(
+            registerError,
+            "Password must be at least 8 characters, include 1 uppercase letter and 1 number"
+          );
+        }
+
+        /* ✅ PASSWORD MATCH */
+        if (p1 !== p2)
+          return showError(registerError, "Passwords do not match");
+
+        const res = await fetch(registerForm.action, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": registerForm.querySelector(
+              "[name=csrfmiddlewaretoken]"
+            ).value,
+            "X-Requested-With": "XMLHttpRequest"
+          },
+          body: new FormData(registerForm),
+        });
+
+        const data = await res.json();
+        data.success
+          ? window.location.href = data.redirect
+          : showError(registerError, data.error);
+      };
+    }
+  }
+
+  /* ========= AJAX PAGE LOAD ========= */
+  async function loadAuthPage(url) {
+    const res = await fetch(url, {
+      headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
+
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const newForm = doc.querySelector("[data-auth-form]");
+
+    document.querySelector("[data-auth-form]").innerHTML = newForm.innerHTML;
+    bindForms();
+  }
+
+  /* ========= EVENT DELEGATION ========= */
+  document.addEventListener("click", (e) => {
+    if (e.target.id === "goRegister" || e.target.id === "goLogin") {
+      e.preventDefault();
+      loadAuthPage(e.target.href);
+    }
+  });
+
+  bindForms();
+});
+</script>
+
+
+
 {% endblock %}

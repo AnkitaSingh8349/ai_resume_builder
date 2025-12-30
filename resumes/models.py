@@ -5,9 +5,6 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
-# ==========================
-# USER PROFILE (PREMIUM)
-# ==========================
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     is_premium = models.BooleanField(default=False)
@@ -22,9 +19,6 @@ def create_user_profile(sender, instance, created, **kwargs):
         UserProfile.objects.create(user=instance)
 
 
-# ==========================
-# RESUME MODEL
-# ==========================
 class Resume(models.Model):
 
     TEMPLATE_CHOICES = [
@@ -36,6 +30,7 @@ class Resume(models.Model):
         ("minimalist", "Minimalist Resume"),
     ]
 
+    # ✅ CHANGED HERE (MOST IMPORTANT LINE)
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -53,7 +48,12 @@ class Resume(models.Model):
 
     work_link = models.URLField(blank=True, null=True)
 
-    template = models.CharField(max_length=50, default="modern")
+    template = models.CharField(
+        max_length=50,
+        choices=TEMPLATE_CHOICES,
+        default="modern"
+    )
+
     color = models.CharField(max_length=20, default="#2563eb")
 
     created_at = models.DateTimeField(auto_now_add=True)

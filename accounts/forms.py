@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 import re
 
-
 class SignupForm(forms.ModelForm):
     email = forms.EmailField(
         required=True,
@@ -35,9 +34,12 @@ class SignupForm(forms.ModelForm):
             })
         }
 
-    # username validation
+    # username validation (no uniqueness check here)
     def clean_username(self):
         username = self.cleaned_data.get("username")
+
+        if not username:
+            raise ValidationError("Username is required")
 
         if len(username) < 4:
             raise ValidationError("Username must be at least 4 characters long")
@@ -45,10 +47,15 @@ class SignupForm(forms.ModelForm):
         if not re.match(r'^[a-zA-Z0-9_]+$', username):
             raise ValidationError("Username can contain only letters, numbers, and underscore")
 
-        if User.objects.filter(username=username).exists():
-            raise ValidationError("Username already exists")
-
+        # NOTE: no uniqueness check here so many employees can have same display name
         return username
+
+    # email uniqueness validation moved here (so form shows error)
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("Email already exists")
+        return email
 
     # password validation
     def clean_password1(self):
